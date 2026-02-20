@@ -1,0 +1,233 @@
+# ============================================================
+#  ElytraTrails – Trail Definitions
+# ============================================================
+# Trail Types: STATIC, ANIMATED, COMPLEX
+#
+# Attributes:
+#   display-name  – Name shown in the GUI (supports & color codes)
+#   type          – STATIC | ANIMATED | COMPLEX
+#   particle      – Bukkit Particle enum name (e.g. DUST, FLAME, END_ROD)
+#   amount        – Number of particles per spawn
+#   speed         – Particle speed / spread
+#   offset        – {x, y, z} randomisation offsets
+#   size          – Dust particle size (only for DUST particle)
+#   colors        – List of hex colors (for DUST / ANIMATED)
+#   shape         – Shape id for COMPLEX trails (spiral, butterfly, flame_points)
+#   price         – Cost to purchase (0 = free)
+#   icon          – Material for the GUI icon
+# ============================================================
+
+trails:
+
+  # ── STATIC TRAILS ──────────────────────────────────────────
+
+  red_dust:
+    display-name: "&cRed Dust"
+    type: STATIC
+    particle: DUST
+    amount: 8
+    speed: 0
+    offset:
+      x: 0.3
+      y: 0.3
+      z: 0.3
+    size: 1.2
+    colors:
+      - "#FF0000"
+    price: 0
+    icon: REDSTONE
+
+  blue_dust:
+    display-name: "&9Blue Dust"
+    type: STATIC
+    particle: DUST
+    amount: 8
+    speed: 0
+    offset:
+      x: 0.3
+      y: 0.3
+      z: 0.3
+    size: 1.2
+    colors:
+      - "#3333FF"
+    price: 100
+    icon: LAPIS_LAZULI
+
+  green_dust:
+    display-name: "&aGreen Dust"
+    type: STATIC
+    particle: DUST
+    amount: 8
+    speed: 0
+    offset:
+      x: 0.3
+      y: 0.3
+      z: 0.3
+    size: 1.2
+    colors:
+      - "#00FF00"
+    price: 100
+    icon: EMERALD
+
+  end_rod_trail:
+    display-name: "&fEnd Rod Sparkle"
+    type: STATIC
+    particle: END_ROD
+    amount: 5
+    speed: 0.02
+    offset:
+      x: 0.2
+      y: 0.2
+      z: 0.2
+    size: 1.0
+    colors: []
+    price: 200
+    icon: END_ROD
+
+  flame_trail:
+    display-name: "&6Flame"
+    type: STATIC
+    particle: FLAME
+    amount: 6
+    speed: 0.02
+    offset:
+      x: 0.15
+      y: 0.15
+      z: 0.15
+    size: 1.0
+    colors: []
+    price: 250
+    icon: BLAZE_POWDER
+
+  soul_flame:
+    display-name: "&bSoul Flame"
+    type: STATIC
+    particle: SOUL_FIRE_FLAME
+    amount: 6
+    speed: 0.02
+    offset:
+      x: 0.15
+      y: 0.15
+      z: 0.15
+    size: 1.0
+    colors: []
+    price: 300
+    icon: SOUL_LANTERN
+
+  # ── ANIMATED TRAILS ────────────────────────────────────────
+
+  rainbow:
+    display-name: "&c&lR&6&la&e&li&a&ln&b&lb&9&lo&d&lw"
+    type: ANIMATED
+    particle: DUST
+    amount: 10
+    speed: 0
+    offset:
+      x: 0.3
+      y: 0.3
+      z: 0.3
+    size: 1.4
+    colors:
+      - "#FF0000"
+      - "#FF7F00"
+      - "#FFFF00"
+      - "#00FF00"
+      - "#0000FF"
+      - "#4B0082"
+      - "#9400D3"
+    price: 500
+    icon: PRISMARINE_SHARD
+
+  ocean_wave:
+    display-name: "&3Ocean Wave"
+    type: ANIMATED
+    particle: DUST
+    amount: 10
+    speed: 0
+    offset:
+      x: 0.25
+      y: 0.25
+      z: 0.25
+    size: 1.3
+    colors:
+      - "#006994"
+      - "#0099CC"
+      - "#00CED1"
+      - "#48D1CC"
+      - "#40E0D0"
+    price: 400
+    icon: HEART_OF_THE_SEA
+
+  fire_fade:
+    display-name: "&c&lFire &6&lFade"
+    type: ANIMATED
+    particle: DUST
+    amount: 10
+    speed: 0
+    offset:
+      x: 0.25
+      y: 0.25
+      z: 0.25
+    size: 1.3
+    colors:
+      - "#FF0000"
+      - "#FF4500"
+      - "#FF8C00"
+      - "#FFD700"
+      - "#FFFF00"
+    price: 400
+    icon: FIRE_CHARGE
+
+  # ── COMPLEX TRAILS ─────────────────────────────────────────
+
+  spiral:
+    display-name: "&dSpiral"
+    type: COMPLEX
+    particle: DUST
+    amount: 2
+    speed: 0
+    offset:
+      x: 0
+      y: 0
+      z: 0
+    size: 1.0
+    colors:
+      - "#FF00FF"
+    shape: spiral
+    price: 750
+    icon: NAUTILUS_SHELL
+
+  butterfly:
+    display-name: "&d&lButterfly Wings"
+    type: COMPLEX
+    particle: DUST
+    amount: 1
+    speed: 0
+    offset:
+      x: 0
+      y: 0
+      z: 0
+    size: 1.0
+    colors:
+      - "#FF69B4"
+      - "#FF1493"
+    shape: butterfly
+    price: 1000
+    icon: FEATHER
+
+  flame_points:
+    display-name: "&6&lFlame Burst"
+    type: COMPLEX
+    particle: FLAME
+    amount: 1
+    speed: 0.05
+    offset:
+      x: 0
+      y: 0
+      z: 0
+    size: 1.0
+    colors: []
+    shape: flame_points
+    price: 800
+    icon: MAGMA_CREAM
+

@@ -1,0 +1,29 @@
+name: ElytraTrails
+version: '1.0'
+main: com.usainsrht.elytratrails.ElytraTrails
+api-version: '1.21'
+description: Cosmetic particle trails behind Elytra-gliding players.
+softdepend:
+  - Vault
+
+commands:
+  elytra:
+    description: Main ElytraTrails command.
+    usage: /<command> [gui|reload|give]
+    aliases:
+      - elytratrails
+      - et
+
+permissions:
+  elytratrails.gui:
+    description: Allows opening the trail selection GUI.
+    default: true
+  elytratrails.buy:
+    description: Allows purchasing trails through the GUI.
+    default: true
+  elytratrails.trail.*:
+    description: Grants access to all trails.
+    default: false
+  elytratrails.admin:
+    description: Allows admin commands (reload, give).
+    default: op
