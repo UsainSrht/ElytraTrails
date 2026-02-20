@@ -8,12 +8,8 @@ import com.usainsrht.elytratrails.gui.TrailGUI;
 import com.usainsrht.elytratrails.listener.GUIListener;
 import com.usainsrht.elytratrails.listener.PlayerListener;
 import com.usainsrht.elytratrails.trail.ParticleTask;
-import com.usainsrht.elytratrails.trail.shape.*;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class ElytraTrails extends JavaPlugin {
 
@@ -41,15 +37,9 @@ public final class ElytraTrails extends JavaPlugin {
             getLogger().info("Vault not found — trail purchasing disabled.");
         }
 
-        // ── Shape registry ───────────────────────────────────
-        Map<String, ShapeProvider> shapes = new HashMap<>();
-        shapes.put("spiral", new SpiralShape());
-        shapes.put("butterfly", new ButterflyShape());
-        shapes.put("flame_points", new FlamePointsShape());
-
-        // ── Particle task (runs every 2 ticks = 10 Hz) ──────
-        particleTask = new ParticleTask(this, trailManager, playerDataManager, shapes);
-        particleTask.runTaskTimer(this, 0L, 2L);
+        // ── Particle task (runs every tick; emitters control their own intervals) ──
+        particleTask = new ParticleTask(this, trailManager, playerDataManager);
+        particleTask.runTaskTimer(this, 0L, 1L);
 
         // ── GUI ──────────────────────────────────────────────
         trailGUI = new TrailGUI(this, trailManager, playerDataManager, vaultHook);
@@ -71,16 +61,12 @@ public final class ElytraTrails extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Cancel the particle task
         if (particleTask != null) {
             particleTask.cancel();
         }
-
-        // Save all player data
         if (playerDataManager != null) {
             playerDataManager.saveAll();
         }
-
         getLogger().info("ElytraTrails disabled.");
     }
 

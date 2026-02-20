@@ -1,233 +1,779 @@
-# ============================================================
-#  ElytraTrails – Trail Definitions
-# ============================================================
-# Trail Types: STATIC, ANIMATED, COMPLEX
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║                   ElytraTrails – Trail Definitions                   ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
 #
-# Attributes:
-#   display-name  – Name shown in the GUI (supports & color codes)
-#   type          – STATIC | ANIMATED | COMPLEX
-#   particle      – Bukkit Particle enum name (e.g. DUST, FLAME, END_ROD)
-#   amount        – Number of particles per spawn
-#   speed         – Particle speed / spread
-#   offset        – {x, y, z} randomisation offsets
-#   size          – Dust particle size (only for DUST particle)
-#   colors        – List of hex colors (for DUST / ANIMATED)
-#   shape         – Shape id for COMPLEX trails (spiral, butterfly, flame_points)
-#   price         – Cost to purchase (0 = free)
-#   icon          – Material for the GUI icon
-# ============================================================
+# Each trail has one or more "emitters". Each emitter controls WHAT particle
+# spawns, WHERE it spawns, HOW OFTEN, and optional shape behaviour.
+#
+# ── Per-emitter config keys ──────────────────────────────────────────────
+#
+#   spawn-point:            Where the particles originate.
+#                           WINGS | LEFT_WING | RIGHT_WING | FEET | BODY | BEHIND
+#
+#   wing-coverage:          0.0 = tip only (default), 1.0 = full wing span.
+#                           Intermediate values interpolate along the wing.
+#
+#   particle:               Bukkit Particle name  (DUST, FLAME, END_ROD, SOUL_FIRE_FLAME …)
+#   amount:                 Number of particles per spawn burst.
+#   interval:               Ticks between spawns (1 = every tick, 2 = every other, …).
+#   speed:                  Particle random speed/spread.
+#   size:                   DUST particle size (float, default 1.0).
+#   offset: {x,y,z}        Random offset spread applied to each particle.
+#
+#   colors: ["#hex",…]     For DUST particles. Multiple → colour cycling.
+#   color-cycle-rate:       Ticks before cycling to the next colour (default 1).
+#
+#   velocity: {x,y,z}      Fixed directional velocity per particle (overrides speed).
+#   random-direction:       true/false – give each particle a random unit-vector velocity.
+#   random-direction-speed: Speed magnitude when random-direction is true.
+#
+#   shape:                  none | spiral | butterfly | wave
+#
+#   # Spiral parameters (shape: spiral)
+#   spiral-radius:          Base circle radius (blocks).
+#   spiral-speed:           Angular speed (radians per tick).
+#   spiral-points:          Points rendered per tick around the circle.
+#   spiral-expand:          true → pulsing radius (expand/shrink over time).
+#   spiral-expand-speed:    Pulse frequency.
+#   spiral-expand-min:      Minimum radius when pulsing.
+#   spiral-expand-max:      Maximum radius when pulsing.
+#
+#   # Butterfly parameters (shape: butterfly)
+#   butterfly-scale:        Overall wing-shape scale.
+#   butterfly-flap-speed:   How fast the wings "flap".
+#   butterfly-points:       Resolution (more points = smoother curve).
+#
+#   # Wave parameters (shape: wave)
+#   wave-amplitude:         Height of the sine-wave oscillation.
+#   wave-frequency:         Speed of the oscillation.
+#
+# ═════════════════════════════════════════════════════════════════════════
 
 trails:
 
-  # ── STATIC TRAILS ──────────────────────────────────────────
+  # ╔═════════════════════════════════════════════════════════════════════╗
+  # ║                         STATIC TRAILS                              ║
+  # ╚═════════════════════════════════════════════════════════════════════╝
 
+  # ── Red Dust  (free starter trail) ─────────────────────────────────
   red_dust:
     display-name: "&cRed Dust"
     type: STATIC
-    particle: DUST
-    amount: 8
-    speed: 0
-    offset:
-      x: 0.3
-      y: 0.3
-      z: 0.3
-    size: 1.2
-    colors:
-      - "#FF0000"
     price: 0
     icon: REDSTONE
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#FF0000" ]
 
+  # ── Blue Dust ──────────────────────────────────────────────────────
   blue_dust:
     display-name: "&9Blue Dust"
     type: STATIC
-    particle: DUST
-    amount: 8
-    speed: 0
-    offset:
-      x: 0.3
-      y: 0.3
-      z: 0.3
-    size: 1.2
-    colors:
-      - "#3333FF"
     price: 100
     icon: LAPIS_LAZULI
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#3333FF" ]
 
+  # ── Green Dust ─────────────────────────────────────────────────────
   green_dust:
     display-name: "&aGreen Dust"
     type: STATIC
-    particle: DUST
-    amount: 8
-    speed: 0
-    offset:
-      x: 0.3
-      y: 0.3
-      z: 0.3
-    size: 1.2
-    colors:
-      - "#00FF00"
     price: 100
     icon: EMERALD
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#00FF00" ]
 
+  # ── Purple Dust (wing tips + feet) ─────────────────────────────────
+  purple_dust:
+    display-name: "&5Purple Trail"
+    type: STATIC
+    price: 150
+    icon: AMETHYST_SHARD
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#9B30FF" ]
+      feet:
+        spawn-point: FEET
+        particle: DUST
+        amount: 3
+        interval: 2
+        speed: 0
+        size: 1.0
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+        colors: [ "#7B00D3" ]
+
+  # ── Full Wing Red (covers the entire wing span) ───────────────────
+  full_wing_red:
+    display-name: "&4Full Wing Red"
+    type: STATIC
+    price: 300
+    icon: RED_DYE
+    emitters:
+      wings_full:
+        spawn-point: WINGS
+        wing-coverage: 1.0
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.0
+        offset: { x: 0.05, y: 0.05, z: 0.05 }
+        colors: [ "#CC0000" ]
+
+  # ── End Rod Sparkle ────────────────────────────────────────────────
   end_rod_trail:
     display-name: "&fEnd Rod Sparkle"
     type: STATIC
-    particle: END_ROD
-    amount: 5
-    speed: 0.02
-    offset:
-      x: 0.2
-      y: 0.2
-      z: 0.2
-    size: 1.0
-    colors: []
     price: 200
     icon: END_ROD
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: END_ROD
+        amount: 2
+        interval: 1
+        speed: 0.02
+        offset: { x: 0.2, y: 0.2, z: 0.2 }
+      feet:
+        spawn-point: FEET
+        particle: END_ROD
+        amount: 1
+        interval: 2
+        speed: 0.01
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
 
+  # ── Flame Trail ────────────────────────────────────────────────────
   flame_trail:
     display-name: "&6Flame"
     type: STATIC
-    particle: FLAME
-    amount: 6
-    speed: 0.02
-    offset:
-      x: 0.15
-      y: 0.15
-      z: 0.15
-    size: 1.0
-    colors: []
     price: 250
     icon: BLAZE_POWDER
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: FLAME
+        amount: 3
+        interval: 1
+        speed: 0.02
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
 
+  # ── Soul Flame ─────────────────────────────────────────────────────
   soul_flame:
     display-name: "&bSoul Flame"
     type: STATIC
-    particle: SOUL_FIRE_FLAME
-    amount: 6
-    speed: 0.02
-    offset:
-      x: 0.15
-      y: 0.15
-      z: 0.15
-    size: 1.0
-    colors: []
     price: 300
     icon: SOUL_LANTERN
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: SOUL_FIRE_FLAME
+        amount: 3
+        interval: 1
+        speed: 0.02
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+      behind:
+        spawn-point: BEHIND
+        particle: SOUL_FIRE_FLAME
+        amount: 2
+        interval: 2
+        speed: 0.01
+        offset: { x: 0.2, y: 0.2, z: 0.2 }
 
-  # ── ANIMATED TRAILS ────────────────────────────────────────
+  # ── Flame Jet (velocity-driven flames shooting downward from feet) ─
+  flame_jet:
+    display-name: "&6&lFlame Jet"
+    type: STATIC
+    price: 350
+    icon: FIRE_CHARGE
+    emitters:
+      feet_jet:
+        spawn-point: FEET
+        particle: FLAME
+        amount: 4
+        interval: 1
+        speed: 0
+        offset: { x: 0.05, y: 0.0, z: 0.05 }
+        velocity: { x: 0.0, y: -0.15, z: 0.0 }
+      wing_sparks:
+        spawn-point: WINGS
+        particle: FLAME
+        amount: 1
+        interval: 2
+        speed: 0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+        random-direction: true
+        random-direction-speed: 0.06
 
+  # ── Firework Burst (random-direction sparkles from wings) ──────────
+  firework_burst:
+    display-name: "&e&lFirework Burst"
+    type: STATIC
+    price: 400
+    icon: FIREWORK_ROCKET
+    emitters:
+      wing_sparks:
+        spawn-point: WINGS
+        particle: FIREWORK
+        amount: 3
+        interval: 2
+        speed: 0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+        random-direction: true
+        random-direction-speed: 0.1
+      body_glow:
+        spawn-point: BODY
+        particle: END_ROD
+        amount: 1
+        interval: 3
+        speed: 0.02
+        offset: { x: 0.3, y: 0.3, z: 0.3 }
+
+  # ── Cherry Blossoms (slow-falling pink petals) ─────────────────────
+  cherry_blossom:
+    display-name: "&d&lCherry Blossom"
+    type: STATIC
+    price: 350
+    icon: CHERRY_LEAVES
+    emitters:
+      wing_petals:
+        spawn-point: WINGS
+        wing-coverage: 0.6
+        particle: CHERRY_LEAVES
+        amount: 1
+        interval: 2
+        speed: 0.02
+        offset: { x: 0.2, y: 0.1, z: 0.2 }
+      feet_petals:
+        spawn-point: FEET
+        particle: CHERRY_LEAVES
+        amount: 2
+        interval: 3
+        speed: 0.01
+        offset: { x: 0.3, y: 0.1, z: 0.3 }
+
+  # ╔═════════════════════════════════════════════════════════════════════╗
+  # ║                        ANIMATED TRAILS                             ║
+  # ╚═════════════════════════════════════════════════════════════════════╝
+
+  # ── Rainbow (colour-cycling dust on wing tips) ─────────────────────
   rainbow:
     display-name: "&c&lR&6&la&e&li&a&ln&b&lb&9&lo&d&lw"
     type: ANIMATED
-    particle: DUST
-    amount: 10
-    speed: 0
-    offset:
-      x: 0.3
-      y: 0.3
-      z: 0.3
-    size: 1.4
-    colors:
-      - "#FF0000"
-      - "#FF7F00"
-      - "#FFFF00"
-      - "#00FF00"
-      - "#0000FF"
-      - "#4B0082"
-      - "#9400D3"
     price: 500
     icon: PRISMARINE_SHARD
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.4
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+        colors:
+          - "#FF0000"
+          - "#FF7F00"
+          - "#FFFF00"
+          - "#00FF00"
+          - "#0000FF"
+          - "#4B0082"
+          - "#9400D3"
+        color-cycle-rate: 2
 
+  # ── Ocean Wave ─────────────────────────────────────────────────────
   ocean_wave:
     display-name: "&3Ocean Wave"
     type: ANIMATED
-    particle: DUST
-    amount: 10
-    speed: 0
-    offset:
-      x: 0.25
-      y: 0.25
-      z: 0.25
-    size: 1.3
-    colors:
-      - "#006994"
-      - "#0099CC"
-      - "#00CED1"
-      - "#48D1CC"
-      - "#40E0D0"
     price: 400
     icon: HEART_OF_THE_SEA
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.3
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+        colors:
+          - "#006994"
+          - "#0099CC"
+          - "#00CED1"
+          - "#48D1CC"
+          - "#40E0D0"
+        color-cycle-rate: 3
+      feet_drip:
+        spawn-point: FEET
+        particle: DRIPPING_WATER
+        amount: 1
+        interval: 4
+        speed: 0
+        offset: { x: 0.1, y: 0.0, z: 0.1 }
 
+  # ── Fire Fade ──────────────────────────────────────────────────────
   fire_fade:
     display-name: "&c&lFire &6&lFade"
     type: ANIMATED
-    particle: DUST
-    amount: 10
-    speed: 0
-    offset:
-      x: 0.25
-      y: 0.25
-      z: 0.25
-    size: 1.3
-    colors:
-      - "#FF0000"
-      - "#FF4500"
-      - "#FF8C00"
-      - "#FFD700"
-      - "#FFFF00"
     price: 400
-    icon: FIRE_CHARGE
+    icon: MAGMA_CREAM
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.3
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+        colors:
+          - "#FF0000"
+          - "#FF4500"
+          - "#FF8C00"
+          - "#FFD700"
+          - "#FFFF00"
+        color-cycle-rate: 2
+      feet_embers:
+        spawn-point: FEET
+        particle: FLAME
+        amount: 1
+        interval: 3
+        speed: 0.01
+        offset: { x: 0.1, y: 0.0, z: 0.1 }
 
-  # ── COMPLEX TRAILS ─────────────────────────────────────────
+  # ── Neon Pink/Cyan ─────────────────────────────────────────────────
+  neon_pulse:
+    display-name: "&d&lNeon &b&lPulse"
+    type: ANIMATED
+    price: 450
+    icon: GLOW_INK_SAC
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.5
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors:
+          - "#FF1493"
+          - "#FF69B4"
+          - "#00FFFF"
+          - "#00CED1"
+        color-cycle-rate: 4
+      body_glow:
+        spawn-point: BODY
+        particle: DUST
+        amount: 2
+        interval: 2
+        speed: 0
+        size: 2.0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+        colors:
+          - "#FF1493"
+          - "#00FFFF"
+        color-cycle-rate: 8
 
-  spiral:
-    display-name: "&dSpiral"
+  # ── Golden Royal (full wing gold cycling) ──────────────────────────
+  golden_royal:
+    display-name: "&6&lGolden Royal"
+    type: ANIMATED
+    price: 600
+    icon: GOLD_INGOT
+    emitters:
+      full_wings:
+        spawn-point: WINGS
+        wing-coverage: 0.8
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.05, y: 0.05, z: 0.05 }
+        colors:
+          - "#FFD700"
+          - "#DAA520"
+          - "#B8860B"
+          - "#DAA520"
+        color-cycle-rate: 3
+      sparkles:
+        spawn-point: WINGS
+        particle: END_ROD
+        amount: 1
+        interval: 4
+        speed: 0.01
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+
+  # ╔═════════════════════════════════════════════════════════════════════╗
+  # ║                        COMPLEX TRAILS                              ║
+  # ╚═════════════════════════════════════════════════════════════════════╝
+
+  # ── Rainbow Spiral (expanding/shrinking circle behind the player) ──
+  rainbow_spiral:
+    display-name: "&c&lRainbow &d&lSpiral"
     type: COMPLEX
-    particle: DUST
-    amount: 2
-    speed: 0
-    offset:
-      x: 0
-      y: 0
-      z: 0
-    size: 1.0
-    colors:
-      - "#FF00FF"
-    shape: spiral
     price: 750
     icon: NAUTILUS_SHELL
+    emitters:
+      spiral_behind:
+        spawn-point: BEHIND
+        shape: spiral
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.3
+        colors:
+          - "#FF0000"
+          - "#FF7F00"
+          - "#FFFF00"
+          - "#00FF00"
+          - "#0000FF"
+          - "#4B0082"
+          - "#9400D3"
+        color-cycle-rate: 1
+        spiral-radius: 0.8
+        spiral-speed: 0.5
+        spiral-points: 3
+        spiral-expand: true
+        spiral-expand-speed: 0.04
+        spiral-expand-min: 0.3
+        spiral-expand-max: 1.4
 
+  # ── Purple Spiral (static radius) ─────────────────────────────────
+  purple_spiral:
+    display-name: "&5&lMystic Spiral"
+    type: COMPLEX
+    price: 600
+    icon: CHORUS_FRUIT
+    emitters:
+      spiral_behind:
+        spawn-point: BEHIND
+        shape: spiral
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.1
+        colors: [ "#9B30FF" ]
+        spiral-radius: 0.7
+        spiral-speed: 0.4
+        spiral-points: 2
+      wing_accents:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 1
+        interval: 2
+        speed: 0
+        size: 0.8
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#7B00D3" ]
+
+  # ── Butterfly Wings ────────────────────────────────────────────────
   butterfly:
     display-name: "&d&lButterfly Wings"
     type: COMPLEX
-    particle: DUST
-    amount: 1
-    speed: 0
-    offset:
-      x: 0
-      y: 0
-      z: 0
-    size: 1.0
-    colors:
-      - "#FF69B4"
-      - "#FF1493"
-    shape: butterfly
     price: 1000
     icon: FEATHER
+    emitters:
+      butterfly_body:
+        spawn-point: BODY
+        shape: butterfly
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.0
+        colors:
+          - "#FF69B4"
+          - "#FF1493"
+        color-cycle-rate: 1
+        butterfly-scale: 0.9
+        butterfly-flap-speed: 0.4
+        butterfly-points: 20
 
-  flame_points:
+  # ── Frost Butterfly (blue/white wings) ─────────────────────────────
+  frost_butterfly:
+    display-name: "&b&lFrost Butterfly"
+    type: COMPLEX
+    price: 1200
+    icon: BLUE_ICE
+    emitters:
+      butterfly_body:
+        spawn-point: BODY
+        shape: butterfly
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.1
+        colors:
+          - "#ADD8E6"
+          - "#87CEEB"
+          - "#FFFFFF"
+        color-cycle-rate: 2
+        butterfly-scale: 1.0
+        butterfly-flap-speed: 0.3
+        butterfly-points: 24
+      snowflakes:
+        spawn-point: WINGS
+        particle: SNOWFLAKE
+        amount: 1
+        interval: 3
+        speed: 0.01
+        offset: { x: 0.2, y: 0.2, z: 0.2 }
+
+  # ── Wave Rider (sine-wave oscillating dust on wings) ───────────────
+  wave_rider:
+    display-name: "&3&lWave Rider"
+    type: COMPLEX
+    price: 500
+    icon: TRIDENT
+    emitters:
+      wave_wings:
+        spawn-point: WINGS
+        wing-coverage: 0.5
+        shape: wave
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.0
+        offset: { x: 0.05, y: 0.0, z: 0.05 }
+        colors:
+          - "#006994"
+          - "#00CED1"
+        color-cycle-rate: 3
+        wave-amplitude: 0.5
+        wave-frequency: 0.3
+
+  # ── Flame Burst (random-direction flames from body with spiral) ────
+  flame_burst:
     display-name: "&6&lFlame Burst"
     type: COMPLEX
-    particle: FLAME
-    amount: 1
-    speed: 0.05
-    offset:
-      x: 0
-      y: 0
-      z: 0
-    size: 1.0
-    colors: []
-    shape: flame_points
     price: 800
-    icon: MAGMA_CREAM
+    icon: BLAZE_ROD
+    emitters:
+      fire_spiral:
+        spawn-point: BEHIND
+        shape: spiral
+        particle: FLAME
+        amount: 1
+        interval: 1
+        speed: 0.03
+        spiral-radius: 0.6
+        spiral-speed: 0.6
+        spiral-points: 2
+      wing_fire:
+        spawn-point: WINGS
+        particle: FLAME
+        amount: 2
+        interval: 1
+        speed: 0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+        random-direction: true
+        random-direction-speed: 0.06
+      feet_embers:
+        spawn-point: FEET
+        particle: LAVA
+        amount: 1
+        interval: 8
+        speed: 0
+        offset: { x: 0.1, y: 0.0, z: 0.1 }
 
+  # ── Ender Trail (end particles + spiral) ───────────────────────────
+  ender_trail:
+    display-name: "&5&lEnder Trail"
+    type: COMPLEX
+    price: 900
+    icon: ENDER_EYE
+    emitters:
+      portal_spiral:
+        spawn-point: BEHIND
+        shape: spiral
+        particle: PORTAL
+        amount: 1
+        interval: 1
+        speed: 0.5
+        spiral-radius: 0.5
+        spiral-speed: 0.3
+        spiral-points: 3
+      wing_end_rods:
+        spawn-point: WINGS
+        particle: END_ROD
+        amount: 1
+        interval: 2
+        speed: 0.01
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+      feet_void:
+        spawn-point: FEET
+        particle: DUST
+        amount: 2
+        interval: 2
+        speed: 0
+        size: 1.0
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#2E0854" ]
+
+  # ── Phoenix (fire wings + rising embers) ───────────────────────────
+  phoenix:
+    display-name: "&6&lPhoenix"
+    type: COMPLEX
+    price: 1500
+    icon: BLAZE_POWDER
+    emitters:
+      full_fire_wings:
+        spawn-point: WINGS
+        wing-coverage: 1.0
+        particle: FLAME
+        amount: 1
+        interval: 1
+        speed: 0.01
+        offset: { x: 0.03, y: 0.03, z: 0.03 }
+      wing_tip_sparks:
+        spawn-point: WINGS
+        particle: FLAME
+        amount: 2
+        interval: 1
+        speed: 0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+        random-direction: true
+        random-direction-speed: 0.08
+      rising_embers:
+        spawn-point: BODY
+        particle: FLAME
+        amount: 1
+        interval: 2
+        speed: 0
+        velocity: { x: 0.0, y: 0.12, z: 0.0 }
+      feet_lava:
+        spawn-point: FEET
+        particle: LAVA
+        amount: 1
+        interval: 6
+        speed: 0
+        offset: { x: 0.0, y: 0.0, z: 0.0 }
+      color_accent:
+        spawn-point: WINGS
+        wing-coverage: 0.5
+        particle: DUST
+        amount: 1
+        interval: 2
+        speed: 0
+        size: 1.5
+        offset: { x: 0.05, y: 0.05, z: 0.05 }
+        colors:
+          - "#FF4500"
+          - "#FF8C00"
+          - "#FFD700"
+        color-cycle-rate: 3
+
+  # ── Frostbite (ice particles + snow) ──────────────────────���────────
+  frostbite:
+    display-name: "&b&lFrostbite"
+    type: COMPLEX
+    price: 800
+    icon: PACKED_ICE
+    emitters:
+      ice_wings:
+        spawn-point: WINGS
+        wing-coverage: 0.4
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.0
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors:
+          - "#ADD8E6"
+          - "#E0FFFF"
+          - "#FFFFFF"
+        color-cycle-rate: 4
+      snowflakes:
+        spawn-point: WINGS
+        particle: SNOWFLAKE
+        amount: 1
+        interval: 3
+        speed: 0.02
+        offset: { x: 0.3, y: 0.2, z: 0.3 }
+      feet_frost:
+        spawn-point: FEET
+        particle: SNOWFLAKE
+        amount: 2
+        interval: 4
+        speed: 0.01
+        offset: { x: 0.2, y: 0.1, z: 0.2 }
+
+  # ── Void Walker (dark particles with spiral) ───────────────────────
+  void_walker:
+    display-name: "&8&lVoid Walker"
+    type: COMPLEX
+    price: 1100
+    icon: OBSIDIAN
+    emitters:
+      dark_spiral:
+        spawn-point: BEHIND
+        shape: spiral
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.2
+        colors:
+          - "#1A0033"
+          - "#330066"
+          - "#4B0082"
+        color-cycle-rate: 2
+        spiral-radius: 0.6
+        spiral-speed: 0.35
+        spiral-points: 3
+        spiral-expand: true
+        spiral-expand-speed: 0.03
+        spiral-expand-min: 0.3
+        spiral-expand-max: 1.0
+      wing_void:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 0.9
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#1A0033" ]
+      portal_flecks:
+        spawn-point: BODY
+        particle: PORTAL
+        amount: 3
+        interval: 2
+        speed: 0.3
+        offset: { x: 0.3, y: 0.3, z: 0.3 }
