@@ -70,7 +70,7 @@ trails:
 
   # ── Red Dust  (free starter trail) ─────────────────────────────────
   red_dust:
-    display-name: "&cRed Dust"
+    display-name: "<red>Red Dust"
     type: STATIC
     category: ELYTRA
     price: 0
@@ -88,7 +88,7 @@ trails:
 
   # ── Blue Dust ──────────────────────────────────────────────────────
   blue_dust:
-    display-name: "&9Blue Dust"
+    display-name: "<blue>Blue Dust"
     type: STATIC
     category: ELYTRA
     price: 100
@@ -106,7 +106,7 @@ trails:
 
   # ── Green Dust ─────────────────────────────────────────────────────
   green_dust:
-    display-name: "&aGreen Dust"
+    display-name: "<green>Green Dust"
     type: STATIC
     category: ELYTRA
     price: 100
@@ -124,7 +124,7 @@ trails:
 
   # ── Purple Dust (wing tips + feet) ─────────────────────────────────
   purple_dust:
-    display-name: "&5Purple Trail"
+    display-name: "<dark_purple>Purple Trail"
     type: STATIC
     category: ELYTRA
     price: 150
@@ -151,7 +151,7 @@ trails:
 
   # ── Full Wing Red (covers the entire wing span) ───────────────────
   full_wing_red:
-    display-name: "&4Full Wing Red"
+    display-name: "<dark_red>Full Wing Red"
     type: STATIC
     category: ELYTRA
     price: 300
@@ -170,7 +170,7 @@ trails:
 
   # ── End Rod Sparkle ────────────────────────────────────────────────
   end_rod_trail:
-    display-name: "&fEnd Rod Sparkle"
+    display-name: "<white>End Rod Sparkle"
     type: STATIC
     category: ELYTRA
     price: 200
@@ -193,7 +193,7 @@ trails:
 
   # ── Flame Trail ────────────────────────────────────────────────────
   flame_trail:
-    display-name: "&6Flame"
+    display-name: "<gold>Flame"
     type: STATIC
     category: ELYTRA
     price: 250
@@ -209,7 +209,7 @@ trails:
 
   # ── Soul Flame ─────────────────────────────────────────────────────
   soul_flame:
-    display-name: "&bSoul Flame"
+    display-name: "<aqua>Soul Flame"
     type: STATIC
     category: ELYTRA
     price: 300
@@ -232,7 +232,7 @@ trails:
 
   # ── Flame Jet (velocity-driven flames shooting downward from feet) ─
   flame_jet:
-    display-name: "&6&lFlame Jet"
+    display-name: "<gold><bold>Flame Jet"
     type: STATIC
     category: ELYTRA
     price: 350
@@ -258,7 +258,7 @@ trails:
 
   # ── Firework Burst (random-direction sparkles from wings) ──────────
   firework_burst:
-    display-name: "&e&lFirework Burst"
+    display-name: "<yellow><bold>Firework Burst"
     type: STATIC
     category: ELYTRA
     price: 400
@@ -283,7 +283,7 @@ trails:
 
   # ── Cherry Blossoms (slow-falling pink petals) ─────────────────────
   cherry_blossom:
-    display-name: "&d&lCherry Blossom"
+    display-name: "<light_purple><bold>Cherry Blossom"
     type: STATIC
     category: ELYTRA
     price: 350
@@ -307,7 +307,7 @@ trails:
 
   # ── Rainbow (colour-cycling dust on wing tips) ─────────────────────
   rainbow:
-    display-name: "&c&lR&6&la&e&li&a&ln&b&lb&9&lo&d&lw"
+    display-name: "<red><bold>R<gold><bold>a<yellow><bold>i<green><bold>n<aqua><bold>b<blue><bold>o<light_purple><bold>w"
     type: ANIMATED
     category: ELYTRA
     price: 500
@@ -333,7 +333,7 @@ trails:
 
   # ── Ocean Wave ─────────────────────────────────────────────────────
   ocean_wave:
-    display-name: "&3Ocean Wave"
+    display-name: "<dark_aqua>Ocean Wave"
     type: ANIMATED
     category: ELYTRA
     price: 400
@@ -364,7 +364,7 @@ trails:
 
   # ── Fire Fade ──────────────────────────────────────────────────────
   fire_fade:
-    display-name: "&c&lFire &6&lFade"
+    display-name: "<red><bold>Fire <gold><bold>Fade"
     type: ANIMATED
     category: ELYTRA
     price: 400
@@ -395,7 +395,7 @@ trails:
 
   # ── Neon Pink/Cyan ─────────────────────────────────────────────────
   neon_pulse:
-    display-name: "&d&lNeon &b&lPulse"
+    display-name: "<light_purple><bold>Neon <aqua><bold>Pulse"
     type: ANIMATED
     category: ELYTRA
     price: 450
@@ -430,7 +430,7 @@ trails:
 
   # ── Golden Royal (full wing gold cycling) ──────────────────────────
   golden_royal:
-    display-name: "&6&lGolden Royal"
+    display-name: "<gold><bold>Golden Royal"
     type: ANIMATED
     category: ELYTRA
     price: 600
@@ -461,7 +461,7 @@ trails:
 
   # ── Rainbow Spiral ─────────────────────────────────────────────────
   rainbow_spiral:
-    display-name: "&c&lRainbow &d&lSpiral"
+    display-name: "<red><bold>Rainbow <light_purple><bold>Spiral"
     type: COMPLEX
     category: ELYTRA
     price: 750
@@ -494,7 +494,7 @@ trails:
 
   # ── Purple Spiral ──────────────────────────────────────────────────
   purple_spiral:
-    display-name: "&5&lMystic Spiral"
+    display-name: "<dark_purple><bold>Mystic Spiral"
     type: COMPLEX
     category: ELYTRA
     price: 600
@@ -524,7 +524,7 @@ trails:
 
   # ── Butterfly Wings ────────────────────────────────────────────────
   butterfly:
-    display-name: "&d&lButterfly Wings"
+    display-name: "<light_purple><bold>Butterfly Wings"
     type: COMPLEX
     category: ELYTRA
     price: 1000
@@ -548,7 +548,7 @@ trails:
 
   # ── Frost Butterfly ────────────────────────────────────────────────
   frost_butterfly:
-    display-name: "&b&lFrost Butterfly"
+    display-name: "<aqua><bold>Frost Butterfly"
     type: COMPLEX
     category: ELYTRA
     price: 1200
@@ -580,7 +580,7 @@ trails:
 
   # ── Wave Rider ─────────────────────────────────────────────────────
   wave_rider:
-    display-name: "&3&lWave Rider"
+    display-name: "<dark_aqua><bold>Wave Rider"
     type: COMPLEX
     category: ELYTRA
     price: 500
@@ -605,7 +605,7 @@ trails:
 
   # ── Flame Burst ────────────────────────────────────────────────────
   flame_burst:
-    display-name: "&6&lFlame Burst"
+    display-name: "<gold><bold>Flame Burst"
     type: COMPLEX
     category: ELYTRA
     price: 800
@@ -640,7 +640,7 @@ trails:
 
   # ── Ender Trail ────────────────────────────────────────────────────
   ender_trail:
-    display-name: "&5&lEnder Trail"
+    display-name: "<dark_purple><bold>Ender Trail"
     type: COMPLEX
     category: ELYTRA
     price: 900
@@ -675,7 +675,7 @@ trails:
 
   # ── Phoenix ────────────────────────────────────────────────────────
   phoenix:
-    display-name: "&6&lPhoenix"
+    display-name: "<gold><bold>Phoenix"
     type: COMPLEX
     category: ELYTRA
     price: 1500
@@ -729,7 +729,7 @@ trails:
 
   # ── Frostbite ──────────────────────────────────────────────────────
   frostbite:
-    display-name: "&b&lFrostbite"
+    display-name: "<aqua><bold>Frostbite"
     type: COMPLEX
     category: ELYTRA
     price: 800
@@ -766,7 +766,7 @@ trails:
 
   # ── Void Walker ────────────────────────────────────────────────────
   void_walker:
-    display-name: "&8&lVoid Walker"
+    display-name: "<dark_gray><bold>Void Walker"
     type: COMPLEX
     category: ELYTRA
     price: 1100
@@ -811,7 +811,7 @@ trails:
 
   # ── NEW: Cosmic Wings ──────────────────────────────────────────────
   cosmic_wings:
-    display-name: "&9&lCosmic Wings"
+    display-name: "<blue><bold>Cosmic Wings"
     type: COMPLEX
     category: ELYTRA
     price: 1800
@@ -865,7 +865,7 @@ trails:
 
   # ── NEW: Dragon Breath ─────────────────────────────────────────────
   dragon_breath:
-    display-name: "&5&lDragon Breath"
+    display-name: "<dark_purple><bold>Dragon Breath"
     type: COMPLEX
     category: ELYTRA
     price: 2000
@@ -909,7 +909,7 @@ trails:
 
   # ── NEW: Galaxy Trail ──────────────────────────────────────────────
   galaxy_trail:
-    display-name: "&d&lGalaxy"
+    display-name: "<light_purple><bold>Galaxy"
     type: COMPLEX
     category: ELYTRA
     price: 2200
@@ -970,7 +970,7 @@ trails:
 
   # ── Stellar Aura (NORMAL — always orbits the player) ───────────────
   stellar_aura:
-    display-name: "&b&lStellar Aura"
+    display-name: "<aqua><bold>Stellar Aura"
     type: COMPLEX
     category: PLAYER
     player-mode: NORMAL
@@ -996,7 +996,7 @@ trails:
 
   # ── Idle Wisps (STANDBY — soul fire wisps when standing still) ─────
   idle_wisps:
-    display-name: "&3&lIdle Wisps"
+    display-name: "<dark_aqua><bold>Idle Wisps"
     type: STATIC
     category: PLAYER
     player-mode: STANDBY
@@ -1023,7 +1023,7 @@ trails:
 
   # ── Speed Streak (MOVING — motion blur when running) ───────────────
   speed_streak:
-    display-name: "&e&lSpeed Streak"
+    display-name: "<yellow><bold>Speed Streak"
     type: ANIMATED
     category: PLAYER
     player-mode: MOVING
@@ -1058,7 +1058,7 @@ trails:
 
   # ── Void Cloak (NORMAL — dark portal particles orbit) ──────────────
   void_cloak:
-    display-name: "&8&lVoid Cloak"
+    display-name: "<dark_gray><bold>Void Cloak"
     type: COMPLEX
     category: PLAYER
     player-mode: NORMAL
@@ -1087,7 +1087,7 @@ trails:
 
   # ── Aurora Halo (STANDBY — colorful ring above when idle) ──────────
   aurora_halo:
-    display-name: "&a&lAurora Halo"
+    display-name: "<green><bold>Aurora Halo"
     type: ANIMATED
     category: PLAYER
     player-mode: STANDBY
@@ -1124,7 +1124,7 @@ trails:
 
   # ── Confetti Burst (MOVING — colourful bursts while running) ───────
   confetti_burst:
-    display-name: "&c&lConfetti Burst"
+    display-name: "<red><bold>Confetti Burst"
     type: ANIMATED
     category: PLAYER
     player-mode: MOVING
@@ -1172,7 +1172,7 @@ trails:
 
   # ── Flame Arrow ────────────────────────────────────────────────────
   flame_arrow:
-    display-name: "&6&lFlame Arrow"
+    display-name: "<gold><bold>Flame Arrow"
     type: STATIC
     category: ARROW
     price: 0
@@ -1188,7 +1188,7 @@ trails:
 
   # ── Ender Bolt ─────────────────────────────────────────────────────
   ender_bolt:
-    display-name: "&5&lEnder Bolt"
+    display-name: "<dark_purple><bold>Ender Bolt"
     type: ANIMATED
     category: ARROW
     price: 300
@@ -1217,7 +1217,7 @@ trails:
 
   # ── Rainbow Bolt ───────────────────────────────────────────────────
   rainbow_bolt:
-    display-name: "&c&lR&6a&e&li&a&ln&b&lb&9o&d&lw Bolt"
+    display-name: "<red><bold>R<gold>a<yellow><bold>i<green><bold>n<aqua><bold>b<blue>o<light_purple><bold>w Bolt"
     type: ANIMATED
     category: ARROW
     price: 500
@@ -1243,7 +1243,7 @@ trails:
 
   # ── Ice Shard ──────────────────────────────────────────────────────
   ice_shard:
-    display-name: "&b&lIce Shard"
+    display-name: "<aqua><bold>Ice Shard"
     type: STATIC
     category: ARROW
     price: 350
@@ -1272,7 +1272,7 @@ trails:
 
   # ── Spark Shot ─────────────────────────────────────────────────────
   spark_shot:
-    display-name: "&e&lSpark Shot"
+    display-name: "<yellow><bold>Spark Shot"
     type: COMPLEX
     category: ARROW
     price: 600
@@ -1301,7 +1301,7 @@ trails:
 
   # ── Soul Arrow ─────────────────────────────────────────────────────
   soul_arrow:
-    display-name: "&3&lSoul Arrow"
+    display-name: "<dark_aqua><bold>Soul Arrow"
     type: STATIC
     category: ARROW
     price: 400
@@ -1317,7 +1317,7 @@ trails:
 
   # ── Void Bolt ──────────────────────────────────────────────────────
   void_bolt:
-    display-name: "&8&lVoid Bolt"
+    display-name: "<dark_gray><bold>Void Bolt"
     type: ANIMATED
     category: ARROW
     price: 700

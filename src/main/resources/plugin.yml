@@ -6,6 +6,7 @@ description: Cosmetic particle trails — elytra, player, and arrow/projectile t
 softdepend:
   - Vault
   - WorldGuard
+  - SkinsRestorer
 
 commands:
   elytra:

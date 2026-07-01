@@ -1,0 +1,48 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║                 ElytraTrails — messages.yml                      ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# Colors can be specified using MiniMessage tags (e.g., <red>, <green>, <gold>, <yellow>, <gray>, etc.).
+# Placeholders like %trail%, %price%, %player%, %error%, %username% are replaced dynamically where applicable.
+messages:
+  # General & Permission messages
+  no-permission: "<red>You don't have permission to do this."
+  no-permission-cosmetics: "<red>You don't have permission to open the cosmetics menu."
+  no-permission-trail: "<red>You don't have permission to open the trail menu."
+  no-permission-reload: "<red>You don't have permission to reload."
+  no-permission-give: "<red>You don't have permission to use this command."
+  unknown-command: "<red>Unknown sub-command. Use: gui, elytra, player, arrow, reload, give"
+  only-players: "<red>Only players can open the cosmetics menu."
+  only-players-gui: "<red>Only players can open the trail GUI."
+  config-reloaded: "<green>ElytraTrails configuration reloaded!"
+
+  # Give sub-command messages
+  give-usage: "<red>Usage: /elytra give <player> <trail-id>"
+  player-not-online: "<red>Player '%player%' is not online."
+  trail-not-found: "<red>Trail '%trail%' not found."
+  trail-given-sender: "<green>Unlocked trail '%trail%' for %player%."
+  trail-given-receiver: "<green>You have been given the trail: %trail%!"
+
+  # GUI interaction messages
+  trail-selected: "<green>Trail %trail% <green>selected!"
+  trail-deselected: "<green>Trail %trail% <green>deselected."
+  trail-deselected-general: "<yellow>Trail deselected."
+  no-trail-permission: "<red>You don't have permission to use this trail."
+
+  # Economy & Purchasing messages
+  economy-not-available: "<red>Economy is not available. Cannot purchase trails."
+  economy-not-available-skin: "<red>Economy is not available. Cannot change skin."
+  not-enough-money: "<red>You need %price% to purchase this trail."
+  purchase-success: "<green>Purchased and equipped %trail% <green>for %price%!"
+  transaction-failed: "<red>Transaction failed. Please try again."
+
+  # Skin change dialog/action messages
+  skins-not-enabled: "<red>SkinsRestorer is not enabled. Cannot change skin."
+  skin-change-cost: "<red>You need %price% to change your skin."
+  skin-username-empty: "<red>Username cannot be empty."
+  skin-not-enough-money: "<red>You do not have enough money to change your skin."
+  skin-fetching: "<yellow>Fetching and applying skin for '%username%'..."
+  skin-changed-charged: "<green>Skin changed successfully! Charged %price%."
+  skin-changed-free: "<green>Skin changed successfully!"
+  skin-change-failed: "<red>Failed to change skin: %error%"
+  skin-change-cancelled: "<gray>Skin change cancelled."

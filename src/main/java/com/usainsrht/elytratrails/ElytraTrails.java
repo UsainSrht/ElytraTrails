@@ -1,6 +1,7 @@
 package com.usainsrht.elytratrails;
 
 import com.usainsrht.elytratrails.command.ElytraCommand;
+import com.usainsrht.elytratrails.config.ConfigManager;
 import com.usainsrht.elytratrails.config.PlayerDataManager;
 import com.usainsrht.elytratrails.config.TrailManager;
 import com.usainsrht.elytratrails.config.WorldGuardHook;
@@ -12,6 +13,7 @@ import com.usainsrht.elytratrails.listener.PlayerListener;
 import com.usainsrht.elytratrails.listener.ProjectileListener;
 import com.usainsrht.elytratrails.trail.ParticleTask;
 import com.usainsrht.elytratrails.trail.ProjectileTrailTask;
+import com.usainsrht.elytratrails.skins.SkinsRestorerHook;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,10 +21,12 @@ public final class ElytraTrails extends JavaPlugin {
 
     private static ElytraTrails instance;
 
+    private ConfigManager configManager;
     private TrailManager trailManager;
     private PlayerDataManager playerDataManager;
     private VaultHook vaultHook;
     private WorldGuardHook worldGuardHook;
+    private SkinsRestorerHook skinsRestorerHook;
     private CosmeticsGUI cosmeticsGUI;
     private TrailGUI trailGUI;
     private ParticleTask particleTask;
@@ -33,6 +37,7 @@ public final class ElytraTrails extends JavaPlugin {
         instance = this;
 
         // ── Configuration ────────────────────────────────────
+        configManager = new ConfigManager(this);
         trailManager = new TrailManager(this);
         playerDataManager = new PlayerDataManager(this);
 
@@ -47,12 +52,15 @@ public final class ElytraTrails extends JavaPlugin {
         // ── WorldGuard ───────────────────────────────────────
         worldGuardHook = new WorldGuardHook(getLogger());
 
+        // ── SkinsRestorer ────────────────────────────────────
+        skinsRestorerHook = new SkinsRestorerHook(this);
+
         // ── GUI (build CosmeticsGUI after TrailGUI; resolve circular ref) ──
         // TrailGUI needs CosmeticsGUI for the Back button, so we construct
         // CosmeticsGUI first with a placeholder, then inject.
         // Solution: TrailGUI receives cosmeticsGUI as a field we set post-construction.
         trailGUI = new TrailGUI(this, trailManager, playerDataManager, vaultHook, null);
-        cosmeticsGUI = new CosmeticsGUI(trailGUI);
+        cosmeticsGUI = new CosmeticsGUI(this, trailGUI);
         trailGUI.setCosmeticsGUI(cosmeticsGUI);
 
         // ── Particle task (runs every tick) ──────────────────
@@ -101,6 +109,10 @@ public final class ElytraTrails extends JavaPlugin {
         return instance;
     }
 
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
     public TrailManager getTrailManager() {
         return trailManager;
     }
@@ -127,5 +139,9 @@ public final class ElytraTrails extends JavaPlugin {
 
     public ProjectileTrailTask getProjectileTrailTask() {
         return projectileTrailTask;
+    }
+
+    public SkinsRestorerHook getSkinsRestorerHook() {
+        return skinsRestorerHook;
     }
 }

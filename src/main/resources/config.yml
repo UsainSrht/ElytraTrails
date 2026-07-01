@@ -25,3 +25,10 @@ player-trails:
   #   - spawn
   #   - lobby
   #   - arena_1
+
+# ── Skin Change Settings ─────────────────────────────────────────────
+#
+# Cost to change skin using the GUI button.
+# Set to 0 to make it free.
+skin-change:
+  cost: 100.0

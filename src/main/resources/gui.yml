@@ -1,0 +1,150 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║                     ElytraTrails — gui.yml                       ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+cosmetics-gui:
+  title: "<dark_purple><bold>✦ </bold><light_purple>Cosmetics</light_purple><bold> ✦</bold>"
+  size: 27
+  items:
+    filler:
+      material: BLACK_STAINED_GLASS_PANE
+      display-name: " "
+    info:
+      material: BOOK
+      slot: 10
+      display-name: "<light_purple><bold>ℹ How Cosmetics Work</bold>"
+      lore:
+        - "<gray>Cosmetics are purely visual effects"
+        - "<gray>and do not affect gameplay."
+        - ""
+        - "<white><bold>Elytra Trails</bold>"
+        - "<gray>  Play while you glide with an elytra."
+        - ""
+        - "<white><bold>Player Trails</bold>"
+        - "<gray>  Ambient effects around your body"
+        - "<gray>  while on foot. Three modes:"
+        - "<yellow>  Standby <dark_gray>— only when still"
+        - "<yellow>  Moving  <dark_gray>— only when walking/running"
+        - "<yellow>  Normal  <dark_gray>— always active"
+        - ""
+        - "<white><bold>Arrow Trails</bold>"
+        - "<gray>  Follow any projectile you throw."
+        - ""
+        - "<dark_gray>Trails can be locked to regions"
+        - "<dark_gray>by the server administrator."
+    player-trails:
+      material: FEATHER
+      slot: 12
+      display-name: "<green><bold>✦ Player Trails</bold>"
+      lore:
+        - "<gray>Ambient effects that follow"
+        - "<gray>you while on foot."
+        - ""
+        - "<yellow>Modes: <white>Standby, Moving, Normal"
+        - ""
+        - "<yellow>» <green>Click to open!"
+    arrow-trails:
+      material: ARROW
+      slot: 14
+      display-name: "<gold><bold>✦ Arrow Trails</bold>"
+      lore:
+        - "<gray>Particle effects that trail"
+        - "<gray>behind any thrown projectile."
+        - ""
+        - "<gray>Works with: <white>arrows, tridents,"
+        - "<white>snowballs, eggs, potions & more."
+        - ""
+        - "<yellow>» <gold>Click to open!"
+    elytra-trails:
+      material: ELYTRA
+      slot: 16
+      display-name: "<aqua><bold>✦ Elytra Trails</bold>"
+      lore:
+        - "<gray>Spectacular effects while"
+        - "<gray>gliding with an elytra."
+        - ""
+        - "<gray>Wing tips, body spirals,"
+        - "<gray>butterflies and more!"
+        - ""
+        - "<yellow>» <aqua>Click to open!"
+    skin-change:
+      material: PLAYER_HEAD
+      slot: 22
+      display-name: "<light_purple><bold>✦ Change Skin</bold>"
+      lore:
+        - "<gray>Change your skin to match any"
+        - "<gray>other Minecraft player's name."
+        - ""
+        - "<yellow>Cost: <white>%price%"
+        - ""
+        - "<yellow>» <light_purple>Click to change!"
+
+  skin-change-dialog:
+    title: "Change Skin"
+    body: "Enter a Minecraft username to copy their skin:"
+    input-label: "Minecraft Username"
+    confirm-button: "Confirm"
+    cancel-button: "Cancel"
+
+trail-gui:
+  size: 54
+  titles:
+    ELYTRA: "<aqua><bold>Elytra Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
+    PLAYER: "<green><bold>Player Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
+    ARROW: "<gold><bold>Arrow Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
+  filler-materials:
+    ELYTRA: CYAN_STAINED_GLASS_PANE
+    PLAYER: GREEN_STAINED_GLASS_PANE
+    ARROW: ORANGE_STAINED_GLASS_PANE
+  items:
+    filler:
+      display-name: " "
+    back:
+      material: ARROW
+      slot: 45
+      display-name: "<light_purple><bold>← Back to Cosmetics</bold>"
+    previous-page:
+      material: PAPER
+      slot: 46
+      display-name: "<yellow>← Previous Page"
+    deselect:
+      material: MILK_BUCKET
+      slot: 47
+      display-name: "<yellow>Deselect Trail"
+    close:
+      material: BARRIER
+      slot: 49
+      display-name: "<red>Close"
+    next-page:
+      material: PAPER
+      slot: 52
+      display-name: "<yellow>Next Page →"
+
+trail-item:
+  display-names:
+    active: "<green>★ %display_name% <green>★"
+    unlocked: "<white>%display_name%"
+    locked: "<red>✖ %display_name%"
+  lore:
+    - "<gray>Type: <white>%type%"
+    - "%mode_line%"
+    - ""
+    - "%status%"
+  mode-line-format: "<gray>Mode: <white>%mode%"
+  status-lines:
+    active:
+      - "<green>▶ Currently Active"
+      - "<yellow>Click to deselect."
+    unlocked:
+      - "<green>✔ Unlocked"
+      - "<yellow>Click to select."
+    locked-free:
+      - "<red>✖ Locked"
+      - "%permission_line%"
+    locked-paid:
+      - "<red>✖ Locked"
+      - "<gold>Price: <white>%price%"
+      - "%buy_prompt%"
+      - "%permission_line%"
+  permission-line-format: "<dark_gray>Permission: %permission%"
+  buy-prompt-line: "<yellow>Click to purchase."

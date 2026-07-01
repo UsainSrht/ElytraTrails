@@ -8,7 +8,6 @@ import com.usainsrht.elytratrails.gui.TrailGUI;
 import com.usainsrht.elytratrails.model.Trail;
 import com.usainsrht.elytratrails.model.TrailCategory;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -64,7 +63,7 @@ public class ElytraCommand implements TabExecutor {
             case "reload" -> { return handleReload(sender); }
             case "give"   -> { return handleGive(sender, args); }
             default -> {
-                sender.sendMessage(ChatColor.RED + "Unknown sub-command. Use: gui, elytra, player, arrow, reload, give");
+                sender.sendMessage(plugin.getConfigManager().getMessage("unknown-command"));
                 return true;
             }
         }
@@ -74,11 +73,11 @@ public class ElytraCommand implements TabExecutor {
 
     private boolean handleHub(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "Only players can open the cosmetics menu.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("only-players"));
             return true;
         }
         if (!player.hasPermission("elytratrails.gui")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to open the cosmetics menu.");
+            player.sendMessage(plugin.getConfigManager().getMessage("no-permission-cosmetics"));
             return true;
         }
         cosmeticsGUI.open(player);
@@ -87,11 +86,11 @@ public class ElytraCommand implements TabExecutor {
 
     private boolean handleSubGUI(CommandSender sender, TrailCategory category) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "Only players can open the trail GUI.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("only-players-gui"));
             return true;
         }
         if (!player.hasPermission("elytratrails.gui")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to open the trail menu.");
+            player.sendMessage(plugin.getConfigManager().getMessage("no-permission-trail"));
             return true;
         }
         trailGUI.open(player, 0, category);
@@ -100,44 +99,45 @@ public class ElytraCommand implements TabExecutor {
 
     private boolean handleReload(CommandSender sender) {
         if (!sender.hasPermission("elytratrails.admin")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to reload.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("no-permission-reload"));
             return true;
         }
+        plugin.getConfigManager().reload();
         trailManager.loadConfig();
         trailManager.loadTrails();
-        sender.sendMessage(ChatColor.GREEN + "ElytraTrails configuration reloaded!");
+        sender.sendMessage(plugin.getConfigManager().getMessage("config-reloaded"));
         return true;
     }
 
     private boolean handleGive(CommandSender sender, String[] args) {
         if (!sender.hasPermission("elytratrails.admin")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("no-permission-give"));
             return true;
         }
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /elytra give <player> <trail-id>");
+            sender.sendMessage(plugin.getConfigManager().getMessage("give-usage"));
             return true;
         }
 
         Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Player '" + args[1] + "' is not online.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("player-not-online", "%player%", args[1]));
             return true;
         }
 
         String trailId = args[2].toLowerCase();
         Trail trail = trailManager.getTrail(trailId);
         if (trail == null) {
-            sender.sendMessage(ChatColor.RED + "Trail '" + trailId + "' not found.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("trail-not-found", "%trail%", trailId));
             return true;
         }
 
         playerData.unlockTrail(target.getUniqueId(), trailId);
-        sender.sendMessage(ChatColor.GREEN + "Unlocked trail '"
-                + ChatColor.translateAlternateColorCodes('&', trail.getDisplayName())
-                + ChatColor.GREEN + "' for " + target.getName() + ".");
-        target.sendMessage(ChatColor.GREEN + "You have been given the trail: "
-                + ChatColor.translateAlternateColorCodes('&', trail.getDisplayName()) + ChatColor.GREEN + "!");
+        sender.sendMessage(plugin.getConfigManager().getMessage("trail-given-sender",
+                "%trail%", trail.getDisplayName(),
+                "%player%", target.getName()));
+        target.sendMessage(plugin.getConfigManager().getMessage("trail-given-receiver",
+                "%trail%", trail.getDisplayName()));
         return true;
     }
 
