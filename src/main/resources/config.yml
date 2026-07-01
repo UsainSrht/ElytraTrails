@@ -1,0 +1,27 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║                  ElytraTrails — config.yml                      ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# ── Player Trails — WorldGuard Region Filtering ──────────────────────
+#
+# Controls where Player Trails are allowed to display.
+# This setting ONLY affects Player Trails (not elytra or arrow trails).
+#
+# region-mode:
+#   WHITELIST — Player trails are ONLY shown inside the listed regions.
+#               Outside those regions, no player trail particles play.
+#   BLACKLIST — Player trails are BLOCKED inside the listed regions.
+#               Everywhere else, they play normally.
+#
+# regions:
+#   A list of WorldGuard region IDs. Case-sensitive.
+#   If this list is empty, the region-mode is ignored and trails always play.
+#   If WorldGuard is not installed, this entire section is ignored.
+
+player-trails:
+  region-mode: WHITELIST
+  regions: []
+  # regions:
+  #   - spawn
+  #   - lobby
+  #   - arena_1

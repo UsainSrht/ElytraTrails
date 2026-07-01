@@ -1,0 +1,31 @@
+name: ElytraTrails
+version: '2.0'
+main: com.usainsrht.elytratrails.ElytraTrails
+api-version: '1.21'
+description: Cosmetic particle trails — elytra, player, and arrow/projectile trails.
+softdepend:
+  - Vault
+  - WorldGuard
+
+commands:
+  elytra:
+    description: Main ElytraTrails cosmetics command.
+    usage: /<command> [gui|elytra|player|arrow|reload|give]
+    aliases:
+      - elytratrails
+      - et
+      - cosmetics
+
+permissions:
+  elytratrails.gui:
+    description: Allows opening the cosmetics GUI.
+    default: true
+  elytratrails.buy:
+    description: Allows purchasing trails through the GUI.
+    default: true
+  elytratrails.trail.*:
+    description: Grants access to all trails.
+    default: false
+  elytratrails.admin:
+    description: Allows admin commands (reload, give).
+    default: op
