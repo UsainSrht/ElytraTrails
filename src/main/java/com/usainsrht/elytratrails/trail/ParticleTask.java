@@ -99,6 +99,10 @@ public class ParticleTask extends BukkitRunnable {
         Trail trail = trailManager.getTrail(trailId);
         if (trail == null) return;
 
+        if (!player.hasPermission("elytratrails.use.elytra")) {
+            return;
+        }
+
         if (!player.hasPermission("elytratrails.trail.*")
                 && !player.hasPermission(trail.getPermission())) {
             return;
@@ -159,6 +163,10 @@ public class ParticleTask extends BukkitRunnable {
 
         Trail trail = trailManager.getTrail(trailId);
         if (trail == null || trail.getCategory() != TrailCategory.PLAYER) return;
+
+        if (!player.hasPermission("elytratrails.use.player")) {
+            return;
+        }
 
         if (!player.hasPermission("elytratrails.trail.*")
                 && !player.hasPermission(trail.getPermission())) {

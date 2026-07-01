@@ -50,6 +50,10 @@ public class ProjectileListener implements Listener {
         if (trail == null || trail.getCategory() != TrailCategory.ARROW) return;
 
         // Permission check
+        if (!player.hasPermission("elytratrails.use.arrow")) {
+            return;
+        }
+
         if (!player.hasPermission("elytratrails.trail.*")
                 && !player.hasPermission(trail.getPermission())) {
             return;

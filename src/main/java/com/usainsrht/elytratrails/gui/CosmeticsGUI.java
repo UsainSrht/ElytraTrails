@@ -11,6 +11,7 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -170,6 +171,10 @@ public class CosmeticsGUI {
 
     private void handleSkinChangeClick(Player player) {
         ConfigManager cm = plugin.getConfigManager();
+        if (!player.hasPermission("elytratrails.use.skin")) {
+            player.sendMessage(cm.getMessage("no-permission"));
+            return;
+        }
         if (!plugin.getSkinsRestorerHook().isEnabled()) {
             player.sendMessage(cm.getMessage("skins-not-enabled"));
             return;
@@ -295,9 +300,13 @@ public class CosmeticsGUI {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.displayName(name);
+            meta.displayName(name.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
             if (lore != null && !lore.isEmpty()) {
-                meta.lore(lore);
+                List<Component> noItalicLore = new ArrayList<>();
+                for (Component comp : lore) {
+                    noItalicLore.add(comp.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+                }
+                meta.lore(noItalicLore);
             }
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             item.setItemMeta(meta);

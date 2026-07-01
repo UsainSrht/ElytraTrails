@@ -8,6 +8,7 @@ import com.usainsrht.elytratrails.economy.VaultHook;
 import com.usainsrht.elytratrails.model.Trail;
 import com.usainsrht.elytratrails.model.TrailCategory;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -214,6 +215,12 @@ public class TrailGUI {
         Trail trail = trails.get(index);
         UUID uuid = player.getUniqueId();
 
+        String typePerm = "elytratrails.use." + category.name().toLowerCase();
+        if (!player.hasPermission(typePerm)) {
+            player.sendMessage(cm.getMessage("no-trail-permission"));
+            return;
+        }
+
         // Check if already active → deselect
         if (trail.getId().equals(playerData.getActiveTrail(uuid, category))) {
             playerData.clearActiveTrail(uuid, category);
@@ -288,7 +295,8 @@ public class TrailGUI {
             nameFormat = cm.getGuiConfig().getString("trail-item.display-names.locked", "<red>✖ %display_name%");
         }
 
-        Component displayName = MiniMessage.miniMessage().deserialize(nameFormat.replace("%display_name%", displayNameRaw));
+        Component displayName = MiniMessage.miniMessage().deserialize(nameFormat.replace("%display_name%", displayNameRaw))
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
         meta.displayName(displayName);
 
         // Build Status lines first
@@ -393,7 +401,11 @@ public class TrailGUI {
             }
         }
 
-        meta.lore(finalLore);
+        List<Component> noItalicLore = new ArrayList<>();
+        for (Component comp : finalLore) {
+            noItalicLore.add(comp.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        }
+        meta.lore(noItalicLore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
         // Enchant glow for active trail
@@ -422,7 +434,7 @@ public class TrailGUI {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.displayName(name);
+            meta.displayName(name.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             item.setItemMeta(meta);
         }
@@ -433,7 +445,7 @@ public class TrailGUI {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(name));
+            meta.displayName(MiniMessage.miniMessage().deserialize(name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             item.setItemMeta(meta);
         }
