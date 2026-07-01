@@ -8,15 +8,6 @@ softdepend:
   - WorldGuard
   - SkinsRestorer
 
-commands:
-  elytra:
-    description: Main ElytraTrails cosmetics command.
-    usage: /<command> [gui|elytra|player|arrow|reload|give]
-    aliases:
-      - elytratrails
-      - et
-      - cosmetics
-
 permissions:
   elytratrails.gui:
     description: Allows opening the cosmetics GUI.

@@ -1,5 +1,6 @@
 package com.usainsrht.elytratrails;
 
+import com.usainsrht.elytratrails.command.DynamicCommand;
 import com.usainsrht.elytratrails.command.ElytraCommand;
 import com.usainsrht.elytratrails.config.ConfigManager;
 import com.usainsrht.elytratrails.config.PlayerDataManager;
@@ -14,8 +15,16 @@ import com.usainsrht.elytratrails.listener.ProjectileListener;
 import com.usainsrht.elytratrails.trail.ParticleTask;
 import com.usainsrht.elytratrails.trail.ProjectileTrailTask;
 import com.usainsrht.elytratrails.skins.SkinsRestorerHook;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public final class ElytraTrails extends JavaPlugin {
 
@@ -78,19 +87,14 @@ public final class ElytraTrails extends JavaPlugin {
                 new ProjectileListener(playerDataManager, trailManager, projectileTrailTask), this);
 
         // ── Commands ─────────────────────────────────────────
-        ElytraCommand elytraCommand = new ElytraCommand(
-                this, trailManager, playerDataManager, cosmeticsGUI, trailGUI);
-        PluginCommand cmd = getCommand("elytra");
-        if (cmd != null) {
-            cmd.setExecutor(elytraCommand);
-            cmd.setTabCompleter(elytraCommand);
-        }
+        registerCommands();
 
         getLogger().info("ElytraTrails v" + getDescription().getVersion() + " enabled!");
     }
 
     @Override
     public void onDisable() {
+        unregisterCommands();
         if (particleTask != null) {
             particleTask.cancel();
         }
@@ -101,6 +105,85 @@ public final class ElytraTrails extends JavaPlugin {
             playerDataManager.saveAll();
         }
         getLogger().info("ElytraTrails disabled.");
+    }
+
+    private ElytraCommand elytraCommand;
+
+    public void registerCommands() {
+        unregisterCommands();
+
+        FileConfiguration config = getConfig();
+        String commandName = config.getString("command.name", "elytra");
+        List<String> commandAliases = config.getStringList("command.aliases");
+        if (commandAliases.isEmpty()) {
+            commandAliases = List.of("elytratrails", "et", "cosmetics");
+        }
+
+        if (elytraCommand == null) {
+            elytraCommand = new ElytraCommand(
+                    this, trailManager, playerDataManager, cosmeticsGUI, trailGUI);
+        }
+        elytraCommand.loadSubcommands();
+
+        DynamicCommand dynamicCommand = new DynamicCommand(
+                commandName,
+                "Main ElytraTrails cosmetics command.",
+                "/" + commandName + " [gui|elytra|player|arrow|reload|give]",
+                commandAliases,
+                elytraCommand
+        );
+
+        CommandMap commandMap = getCommandMap();
+        if (commandMap != null) {
+            commandMap.register("elytratrails", dynamicCommand);
+        }
+    }
+
+    public void unregisterCommands() {
+        CommandMap commandMap = getCommandMap();
+        if (commandMap == null) return;
+        Map<String, Command> knownCommands = getKnownCommands(commandMap);
+        if (knownCommands == null) return;
+
+        List<String> keysToRemove = new ArrayList<>();
+        for (Map.Entry<String, Command> entry : knownCommands.entrySet()) {
+            if (entry.getValue() instanceof DynamicCommand) {
+                entry.getValue().unregister(commandMap);
+                keysToRemove.add(entry.getKey());
+            }
+        }
+        for (String key : keysToRemove) {
+            knownCommands.remove(key);
+        }
+    }
+
+    private CommandMap getCommandMap() {
+        try {
+            Field commandMapField = getServer().getClass().getDeclaredField("commandMap");
+            commandMapField.setAccessible(true);
+            return (CommandMap) commandMapField.get(getServer());
+        } catch (Exception e) {
+            getLogger().severe("Could not retrieve Bukkit CommandMap: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Command> getKnownCommands(CommandMap commandMap) {
+        try {
+            Field knownCommandsField = SimpleCommandMap.class.getDeclaredField("knownCommands");
+            knownCommandsField.setAccessible(true);
+            return (Map<String, Command>) knownCommandsField.get(commandMap);
+        } catch (Exception e) {
+            try {
+                Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
+                knownCommandsField.setAccessible(true);
+                return (Map<String, Command>) knownCommandsField.get(commandMap);
+            } catch (Exception ex) {
+                getLogger().severe("Could not retrieve knownCommands map: " + ex.getMessage());
+                return null;
+            }
+        }
     }
 
     // ── Accessors ────────────────────────────────────────────

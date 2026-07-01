@@ -32,3 +32,35 @@ player-trails:
 # Set to 0 to make it free.
 skin-change:
   cost: 100.0
+
+# ── Command Settings ────────────────────────────────────────────────
+#
+# Customize the main command name, aliases, and subcommand names/aliases.
+# Note: Any changes here require a server restart or plugin reload.
+#
+command:
+  name: "elytra"
+  aliases:
+    - "elytratrails"
+    - "et"
+    - "cosmetics"
+  subcommands:
+    gui:
+      name: "gui"
+      aliases: []
+    elytra:
+      name: "elytra"
+      aliases: []
+    player:
+      name: "player"
+      aliases: []
+    arrow:
+      name: "arrow"
+      aliases: []
+    reload:
+      name: "reload"
+      aliases: []
+    give:
+      name: "give"
+      aliases: []
+

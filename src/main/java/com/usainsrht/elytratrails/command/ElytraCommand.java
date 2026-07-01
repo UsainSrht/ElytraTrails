@@ -15,9 +15,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +41,10 @@ public class ElytraCommand implements TabExecutor {
     private final CosmeticsGUI cosmeticsGUI;
     private final TrailGUI trailGUI;
 
+    private final Map<String, String> subcommandMapping = new HashMap<>();
+    private final Map<String, String> subcommandNames = new HashMap<>();
+    private final Map<String, List<String>> subcommandAliases = new HashMap<>();
+
     public ElytraCommand(ElytraTrails plugin, TrailManager trailManager,
                          PlayerDataManager playerData,
                          CosmeticsGUI cosmeticsGUI, TrailGUI trailGUI) {
@@ -46,17 +53,52 @@ public class ElytraCommand implements TabExecutor {
         this.playerData = playerData;
         this.cosmeticsGUI = cosmeticsGUI;
         this.trailGUI = trailGUI;
+        loadSubcommands();
+    }
+
+    public void loadSubcommands() {
+        subcommandMapping.clear();
+        subcommandNames.clear();
+        subcommandAliases.clear();
+
+        FileConfiguration config = plugin.getConfig();
+        String[] defaultSubcommands = {"gui", "elytra", "player", "arrow", "reload", "give"};
+
+        for (String sub : defaultSubcommands) {
+            String path = "command.subcommands." + sub;
+            String name = config.getString(path + ".name", sub).toLowerCase();
+            List<String> aliases = config.getStringList(path + ".aliases");
+            if (aliases == null) {
+                aliases = new ArrayList<>();
+            }
+
+            subcommandNames.put(sub, name);
+            subcommandAliases.put(sub, aliases);
+
+            subcommandMapping.put(name, sub);
+            for (String alias : aliases) {
+                subcommandMapping.put(alias.toLowerCase(), sub);
+            }
+        }
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, @NotNull String[] args) {
-
-        if (args.length == 0 || args[0].equalsIgnoreCase("gui")) {
+        if (args.length == 0) {
             return handleHub(sender);
         }
 
-        switch (args[0].toLowerCase()) {
+        String inputSub = args[0].toLowerCase();
+        String standardSub = subcommandMapping.get(inputSub);
+
+        if (standardSub == null) {
+            sender.sendMessage(plugin.getConfigManager().getMessage("unknown-command"));
+            return true;
+        }
+
+        switch (standardSub) {
+            case "gui"    -> { return handleHub(sender); }
             case "elytra" -> { return handleSubGUI(sender, TrailCategory.ELYTRA); }
             case "player" -> { return handleSubGUI(sender, TrailCategory.PLAYER); }
             case "arrow"  -> { return handleSubGUI(sender, TrailCategory.ARROW);  }
@@ -104,6 +146,7 @@ public class ElytraCommand implements TabExecutor {
         }
         plugin.getConfigManager().reload();
         trailManager.loadConfig();
+        plugin.registerCommands();
         trailManager.loadTrails();
         sender.sendMessage(plugin.getConfigManager().getMessage("config-reloaded"));
         return true;
@@ -147,23 +190,33 @@ public class ElytraCommand implements TabExecutor {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                                 @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
-            List<String> subs = new ArrayList<>(List.of("gui", "elytra", "player", "arrow"));
+            List<String> subs = new ArrayList<>();
+            subs.add(subcommandNames.get("gui"));
+            subs.add(subcommandNames.get("elytra"));
+            subs.add(subcommandNames.get("player"));
+            subs.add(subcommandNames.get("arrow"));
             if (sender.hasPermission("elytratrails.admin")) {
-                subs.add("reload");
-                subs.add("give");
+                subs.add(subcommandNames.get("reload"));
+                subs.add(subcommandNames.get("give"));
             }
             return filterCompletions(subs, args[0]);
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("give") && sender.hasPermission("elytratrails.admin")) {
-            return filterCompletions(
-                    Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()),
-                    args[1]
-            );
+        if (args.length == 2 && sender.hasPermission("elytratrails.admin")) {
+            String standardSub = subcommandMapping.get(args[0].toLowerCase());
+            if ("give".equals(standardSub)) {
+                return filterCompletions(
+                        Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()),
+                        args[1]
+                );
+            }
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("give") && sender.hasPermission("elytratrails.admin")) {
-            return filterCompletions(new ArrayList<>(trailManager.getTrailIds()), args[2]);
+        if (args.length == 3 && sender.hasPermission("elytratrails.admin")) {
+            String standardSub = subcommandMapping.get(args[0].toLowerCase());
+            if ("give".equals(standardSub)) {
+                return filterCompletions(new ArrayList<>(trailManager.getTrailIds()), args[2]);
+            }
         }
 
         return Collections.emptyList();
