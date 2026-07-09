@@ -89,5 +89,19 @@
             <version>7.0.9</version>
             <scope>provided</scope>
         </dependency>
+        <!-- LimitAPI (soft-depend — provided at runtime by the server) -->
+        <dependency>
+            <groupId>me.usainsrht.limitapi</groupId>
+            <artifactId>limitapi-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- LuckPerms API (soft-depend — fallback when LimitAPI is absent) -->
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.4</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

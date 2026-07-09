@@ -3,6 +3,7 @@ package com.usainsrht.elytratrails.gui;
 import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.config.ConfigManager;
 import com.usainsrht.elytratrails.model.TrailCategory;
+import com.usainsrht.elytratrails.skin.SkinChangePricing;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.DialogBase;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
@@ -133,17 +134,7 @@ public class CosmeticsGUI {
         // ── Skin Change ───────────────────────────────────
         int skinSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.skin-change.slot", 22);
         if (skinSlot >= 0 && skinSlot < size) {
-            double cost = plugin.getConfig().getDouble("skin-change.cost", 100.0);
-            String costStr = plugin.getVaultHook().isEnabled() ? plugin.getVaultHook().format(cost) : String.format("$%.2f", cost);
-            inv.setItem(skinSlot, makeItemFromConfig(cm, "cosmetics-gui.items.skin-change", Material.PLAYER_HEAD,
-                    "<light_purple><bold>✦ Change Skin</bold>", Arrays.asList(
-                        "<gray>Change your skin to match any",
-                        "<gray>other Minecraft player's name.",
-                        "",
-                        "<yellow>Cost: <white>%price%",
-                        "",
-                        "<yellow>» <light_purple>Click to change!"
-                    ), "%price%", costStr));
+            inv.setItem(skinSlot, makeSkinChangeItem(cm, player));
         }
 
         player.openInventory(inv);
@@ -180,7 +171,7 @@ public class CosmeticsGUI {
             return;
         }
 
-        double cost = plugin.getConfig().getDouble("skin-change.cost", 100.0);
+        double cost = plugin.getSkinChangePricing().getEffectiveCost(player);
         if (cost > 0) {
             if (!plugin.getVaultHook().isEnabled()) {
                 player.sendMessage(cm.getMessage("economy-not-available-skin"));
@@ -278,6 +269,70 @@ public class CosmeticsGUI {
     }
 
     // ── Item builders ───────────────────────────────────────
+
+    private ItemStack makeSkinChangeItem(ConfigManager cm, Player player) {
+        String path = "cosmetics-gui.items.skin-change";
+        Material mat = getMaterial(cm.getGuiConfig().getString(path + ".material"), Material.PLAYER_HEAD);
+        String nameRaw = cm.getGuiConfig().getString(path + ".display-name", "<light_purple><bold>✦ Change Skin</bold>");
+        List<String> rawLore = cm.getGuiConfig().contains(path + ".lore")
+                ? cm.getGuiConfig().getStringList(path + ".lore")
+                : Arrays.asList(
+                        "<gray>Change your skin to match any",
+                        "<gray>other Minecraft player's name.",
+                        "",
+                        "%price_line%",
+                        "%discount_line%",
+                        "",
+                        "<yellow>» <light_purple>Click to change!");
+
+        SkinChangePricing pricing = plugin.getSkinChangePricing();
+        SkinChangePricing.PriceDisplay prices = pricing.formatPrices(player, plugin.getVaultHook());
+
+        String priceLine;
+        String discountLine = "";
+        if (prices.hasDiscount()) {
+            String priceTemplate = cm.getGuiConfig().getString(
+                    path + ".discounted-price-lore",
+                    "<strikethrough><gray>%old_price%</strikethrough> <green>%new_price%");
+            String discountTemplate = cm.getGuiConfig().getString(
+                    path + ".discount-info-lore",
+                    "<gray>%percent%% discount from %source%");
+            priceLine = priceTemplate
+                    .replace("%old_price%", prices.formattedBase())
+                    .replace("%new_price%", prices.formattedEffective());
+            discountLine = discountTemplate
+                    .replace("%percent%", String.valueOf(prices.discountPercent()))
+                    .replace("%source%", pricing.getDiscountSource());
+        } else {
+            String priceTemplate = cm.getGuiConfig().getString(path + ".price-lore", "<yellow>Cost: <white>%price%");
+            String formattedPrice = prices.formattedEffective();
+            priceLine = priceTemplate.replace("%price%", formattedPrice);
+        }
+
+        Component displayName = MiniMessage.miniMessage().deserialize(nameRaw);
+        List<Component> lore = new ArrayList<>();
+        for (String line : rawLore) {
+            if ("%discount_line%".equals(line.trim())) {
+                if (discountLine.isEmpty()) {
+                    continue;
+                }
+                line = discountLine;
+            } else {
+                if (line.contains("%price_line%")) {
+                    line = line.replace("%price_line%", priceLine);
+                }
+                if (line.contains("%discount_line%")) {
+                    if (discountLine.isEmpty()) {
+                        continue;
+                    }
+                    line = line.replace("%discount_line%", discountLine);
+                }
+            }
+            lore.add(MiniMessage.miniMessage().deserialize(line));
+        }
+
+        return makeItem(mat, displayName, lore);
+    }
 
     private ItemStack makeItemFromConfig(ConfigManager cm, String path, Material defaultMaterial, String defaultName, List<String> defaultLore, String placeholderTarget, String placeholderReplacement) {
         Material mat = getMaterial(cm.getGuiConfig().getString(path + ".material"), defaultMaterial);

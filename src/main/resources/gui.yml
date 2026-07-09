@@ -75,9 +75,13 @@ cosmetics-gui:
         - "<gray>Change your skin to match any"
         - "<gray>other Minecraft player's name."
         - ""
-        - "<yellow>Cost: <white>%price%"
+        - "%price_line%"
+        - "%discount_line%"
         - ""
         - "<yellow>» <light_purple>Click to change!"
+      price-lore: "<yellow>Cost: <white>%price%"
+      discounted-price-lore: "<strikethrough><gray>%old_price%</strikethrough> <green>%new_price%"
+      discount-info-lore: "<gray>%percent%% discount from %source%"
 
   skin-change-dialog:
     title: "Change Skin"

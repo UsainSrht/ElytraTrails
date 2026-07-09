@@ -32,6 +32,17 @@ player-trails:
 # Set to 0 to make it free.
 skin-change:
   cost: 100.0
+  discount:
+    # Enable VIP discount lookups via LimitAPI (falls back to LuckPerms meta).
+    enabled: true
+    # LuckPerms meta key — also passed to LimitAPI when installed.
+    key: "skin-discount"
+    # LimitAPI strategy: META, PERMISSION_HIGHEST, or PERMISSION_SUMMED
+    strategy: "META"
+    # Discount percent when no meta/permission value is found (0 = no discount).
+    default-percent: 0
+    # Shown in the discounted price lore line (e.g. "20% discount from VIP").
+    source: "VIP"
 
 # ── Command Settings ────────────────────────────────────────────────
 #
