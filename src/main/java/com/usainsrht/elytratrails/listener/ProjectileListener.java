@@ -54,8 +54,7 @@ public class ProjectileListener implements Listener {
             return;
         }
 
-        if (!player.hasPermission("elytratrails.trail.*")
-                && !player.hasPermission(trail.getPermission())) {
+        if (!playerData.hasTrailAccess(player, trail)) {
             return;
         }
 

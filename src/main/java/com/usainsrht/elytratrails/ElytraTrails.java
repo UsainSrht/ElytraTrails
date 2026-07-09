@@ -104,6 +104,9 @@ public final class ElytraTrails extends JavaPlugin {
         if (playerDataManager != null) {
             playerDataManager.saveAll();
         }
+        if (skinsRestorerHook != null) {
+            skinsRestorerHook.disable();
+        }
         getLogger().info("ElytraTrails disabled.");
     }
 

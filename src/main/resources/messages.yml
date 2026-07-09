@@ -37,7 +37,7 @@ messages:
   transaction-failed: "<red>Transaction failed. Please try again."
 
   # Skin change dialog/action messages
-  skins-not-enabled: "<red>SkinsRestorer is not enabled. Cannot change skin."
+  skins-not-enabled: "<red>Skin changing is not available. SkinsRestorer must be installed on your Velocity proxy."
   skin-change-cost: "<red>You need %price% to change your skin."
   skin-username-empty: "<red>Username cannot be empty."
   skin-not-enough-money: "<red>You do not have enough money to change your skin."

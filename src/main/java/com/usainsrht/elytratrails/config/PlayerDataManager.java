@@ -1,8 +1,10 @@
 package com.usainsrht.elytratrails.config;
 
 import com.usainsrht.elytratrails.ElytraTrails;
+import com.usainsrht.elytratrails.model.Trail;
 import com.usainsrht.elytratrails.model.TrailCategory;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,6 +136,16 @@ public class PlayerDataManager {
 
     public void unlockTrail(UUID uuid, String trailId) {
         getUnlockedTrails(uuid).add(trailId);
+    }
+
+    /**
+     * Returns true when the player may use a trail via wildcard permission,
+     * per-trail permission, or a GUI/admin unlock.
+     */
+    public boolean hasTrailAccess(Player player, Trail trail) {
+        return player.hasPermission("elytratrails.trail.*")
+                || player.hasPermission(trail.getPermission())
+                || hasUnlocked(player.getUniqueId(), trail.getId());
     }
 
     // ── Internal ────────────────────────────────────────────

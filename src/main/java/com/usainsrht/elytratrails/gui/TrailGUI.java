@@ -100,7 +100,6 @@ public class TrailGUI {
 
         UUID uuid = player.getUniqueId();
         String activeTrailId = playerData.getActiveTrail(uuid, category);
-        Set<String> unlocked = playerData.getUnlockedTrails(uuid);
 
         int startIndex = page * trailSlotsCount;
         int endIndex = Math.min(startIndex + trailSlotsCount, trails.size());
@@ -108,7 +107,7 @@ public class TrailGUI {
         for (int i = startIndex; i < endIndex; i++) {
             Trail trail = trails.get(i);
             int slot = i - startIndex;
-            inv.setItem(slot, createTrailItem(trail, uuid, activeTrailId, unlocked, player));
+            inv.setItem(slot, createTrailItem(trail, uuid, activeTrailId, player));
         }
 
         // Fill non-trail slots (from trailSlotsCount to size) with filler
@@ -229,11 +228,7 @@ public class TrailGUI {
             return;
         }
 
-        boolean hasPermission = player.hasPermission("elytratrails.trail.*")
-                || player.hasPermission(trail.getPermission());
-        boolean isUnlocked = playerData.hasUnlocked(uuid, trail.getId());
-
-        if (hasPermission || isUnlocked) {
+        if (playerData.hasTrailAccess(player, trail)) {
             // Select the trail
             playerData.setActiveTrail(uuid, category, trail.getId());
             player.sendMessage(cm.getMessage("trail-selected", "%trail%", trail.getDisplayName()));
@@ -272,12 +267,11 @@ public class TrailGUI {
         }
     }
 
-    private ItemStack createTrailItem(Trail trail, UUID uuid, String activeTrailId,
-                                      Set<String> unlocked, Player player) {
+    private ItemStack createTrailItem(Trail trail, UUID uuid, String activeTrailId, Player player) {
         boolean isActive = trail.getId().equals(activeTrailId);
-        boolean hasPermission = player.hasPermission("elytratrails.trail.*")
+        boolean isUnlocked = playerData.hasTrailAccess(player, trail);
+        boolean hasTrailPermission = player.hasPermission("elytratrails.trail.*")
                 || player.hasPermission(trail.getPermission());
-        boolean isUnlocked = unlocked.contains(trail.getId()) || hasPermission;
         boolean isFree = trail.getPrice() <= 0;
 
         ItemStack item = new ItemStack(trail.getIcon());
@@ -328,7 +322,7 @@ public class TrailGUI {
                 }
                 for (String line : rawStatus) {
                     if (line.contains("%permission_line%")) {
-                        if (!hasPermission) {
+                        if (!hasTrailPermission) {
                             String permLine = cm.getGuiConfig().getString("trail-item.permission-line-format", "<dark_gray>Permission: %permission%")
                                     .replace("%permission%", trail.getPermission());
                             statusLines.add(permLine);
@@ -349,7 +343,7 @@ public class TrailGUI {
                 String formattedPrice = vaultHook.isEnabled() ? vaultHook.format(trail.getPrice()) : String.format("$%.2f", trail.getPrice());
                 for (String line : rawStatus) {
                     if (line.contains("%permission_line%")) {
-                        if (!hasPermission) {
+                        if (!hasTrailPermission) {
                             String permLine = cm.getGuiConfig().getString("trail-item.permission-line-format", "<dark_gray>Permission: %permission%")
                                     .replace("%permission%", trail.getPermission());
                             statusLines.add(permLine);

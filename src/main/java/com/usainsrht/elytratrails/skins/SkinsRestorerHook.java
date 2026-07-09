@@ -4,12 +4,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * Soft-dependency wrapper around SkinsRestorer API.
- * Safely changes a player's skin asynchronously, with callbacks on the main thread.
+ * Sends skin change requests to the SkinsRestorer Velocity proxy via plugin messaging.
+ * This works in proxy mode without a backend database or SkinsRestorer API.
  */
 public class SkinsRestorerHook {
 
@@ -18,38 +17,29 @@ public class SkinsRestorerHook {
 
     public SkinsRestorerHook(JavaPlugin plugin) {
         this.plugin = plugin;
-        boolean srPresent = false;
-        try {
-            if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") != null) {
-                // Try class loading to make sure the API is present
-                Class.forName("net.skinsrestorer.api.SkinsRestorerProvider");
-                srPresent = true;
-            }
-        } catch (Exception e) {
-            // SkinsRestorer class not found or other issues
-        }
-        this.enabled = srPresent;
-        if (enabled) {
-            plugin.getLogger().info("SkinsRestorer found — skin changing enabled.");
-        } else {
-            plugin.getLogger().info("SkinsRestorer not found — skin changing disabled.");
-        }
+        plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, SkinRestorerMessages.MESSAGE_CHANNEL);
+        this.enabled = true;
+        plugin.getLogger().info("Skin changing enabled via SkinsRestorer proxy plugin messaging.");
+    }
+
+    public void disable() {
+        plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(plugin, SkinRestorerMessages.MESSAGE_CHANNEL);
     }
 
     /**
-     * @return true if SkinsRestorer API is loaded and available.
+     * @return true if skin changing via proxy plugin messaging is available.
      */
     public boolean isEnabled() {
         return enabled;
     }
 
     /**
-     * Changes the skin of the player asynchronously.
+     * Requests a skin change on the Velocity proxy for the given player.
      * Callbacks are executed on the primary Bukkit server thread.
      *
      * @param player    the player to change skin for
      * @param skinName  the username whose skin to fetch and apply
-     * @param onSuccess runnable called on successful application
+     * @param onSuccess runnable called after the request is sent to the proxy
      * @param onFailure consumer called with an error message on failure
      */
     public void changeSkin(Player player, String skinName, Runnable onSuccess, Consumer<String> onFailure) {
@@ -58,30 +48,23 @@ public class SkinsRestorerHook {
             return;
         }
 
-        // Run the skin resolution asynchronously to prevent blocking the main server thread
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                net.skinsrestorer.api.SkinsRestorer skinsRestorerAPI = net.skinsrestorer.api.SkinsRestorerProvider.get();
-                net.skinsrestorer.api.storage.SkinStorage skinStorage = skinsRestorerAPI.getSkinStorage();
-                net.skinsrestorer.api.storage.PlayerStorage playerStorage = skinsRestorerAPI.getPlayerStorage();
+        if (skinName == null || skinName.isBlank()) {
+            onFailure.accept("Username cannot be empty.");
+            return;
+        }
 
-                Optional<net.skinsrestorer.api.property.InputDataResult> result = skinStorage.findOrCreateSkinData(skinName);
-                if (result.isPresent()) {
-                    // Set and apply the skin synchronously on the main thread
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        try {
-                            playerStorage.setSkinIdOfPlayer(player.getUniqueId(), result.get().getIdentifier());
-                            skinsRestorerAPI.getSkinApplier(Player.class).applySkin(player);
-                            onSuccess.run();
-                        } catch (Exception e) {
-                            onFailure.accept("Failed to apply skin: " + e.getMessage());
-                        }
-                    });
-                } else {
-                    Bukkit.getScheduler().runTask(plugin, () -> onFailure.accept("Skin username '" + skinName + "' could not be found."));
-                }
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) {
+                onFailure.accept("Player is no longer online.");
+                return;
+            }
+
+            try {
+                byte[] payload = SkinRestorerMessages.createSetSkinPayload(skinName.trim());
+                player.sendPluginMessage(plugin, SkinRestorerMessages.MESSAGE_CHANNEL, payload);
+                onSuccess.run();
             } catch (Exception e) {
-                Bukkit.getScheduler().runTask(plugin, () -> onFailure.accept("An error occurred: " + e.getMessage()));
+                onFailure.accept("Failed to send skin change request: " + e.getMessage());
             }
         });
     }

@@ -89,12 +89,5 @@
             <version>7.0.9</version>
             <scope>provided</scope>
         </dependency>
-        <!-- SkinsRestorer API (soft-depend — provided at runtime by the server) -->
-        <dependency>
-            <groupId>net.skinsrestorer</groupId>
-            <artifactId>skinsrestorer-api</artifactId>
-            <version>15.5.2</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 </project>
