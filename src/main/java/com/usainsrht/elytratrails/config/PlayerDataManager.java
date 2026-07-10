@@ -19,6 +19,7 @@ import java.util.*;
  *   <uuid>:
  *     active-elytra: "trail_id"
  *     active-player: "trail_id"
+ *     active-swim:   "trail_id"
  *     active-arrow:  "trail_id"
  *     unlocked:
  *       - "trail_id"

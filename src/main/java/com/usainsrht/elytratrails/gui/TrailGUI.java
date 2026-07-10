@@ -57,6 +57,7 @@ public class TrailGUI {
         return cm.getGuiConfig().getString("trail-gui.titles." + category.name(), switch (category) {
             case ELYTRA -> "<aqua><bold>Elytra Trails";
             case PLAYER -> "<green><bold>Player Trails";
+            case SWIM   -> "<blue><bold>Swimming Trails";
             case ARROW -> "<gold><bold>Arrow Trails";
         });
     }
@@ -72,6 +73,7 @@ public class TrailGUI {
         return switch (category) {
             case ELYTRA -> Material.CYAN_STAINED_GLASS_PANE;
             case PLAYER -> Material.GREEN_STAINED_GLASS_PANE;
+            case SWIM   -> Material.LIGHT_BLUE_STAINED_GLASS_PANE;
             case ARROW  -> Material.ORANGE_STAINED_GLASS_PANE;
         };
     }
@@ -112,7 +114,8 @@ public class TrailGUI {
 
         // Fill non-trail slots (from trailSlotsCount to size) with filler
         String fillerName = cm.getGuiConfig().getString("trail-gui.items.filler.display-name", " ");
-        ItemStack filler = createFiller(categoryFillerMaterial(category), fillerName);
+        boolean fillerHideTooltip = cm.getGuiConfig().getBoolean("trail-gui.items.filler.hide-tooltip", true);
+        ItemStack filler = createFiller(categoryFillerMaterial(category), fillerName, fillerHideTooltip);
         for (int i = trailSlotsCount; i < size; i++) {
             inv.setItem(i, filler);
         }
@@ -435,12 +438,13 @@ public class TrailGUI {
         return item;
     }
 
-    private ItemStack createFiller(Material material, String name) {
+    private ItemStack createFiller(Material material, String name, boolean hideTooltip) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(MiniMessage.miniMessage().deserialize(name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+            meta.setHideTooltip(hideTooltip);
             item.setItemMeta(meta);
         }
         return item;

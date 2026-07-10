@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Synchronous ticker that runs every tick and drives all emitters for every
- * gliding player (elytra trails) and all on-foot players (player trails).
+ * gliding player (elytra trails), swimming players (swim trails), and all on-foot players (player trails).
  * Each emitter has its own interval so different parts of a trail can tick
  * at different rates.
  *
@@ -56,6 +56,12 @@ public class ParticleTask extends BukkitRunnable {
     /** Per-player tick counters for player trails. */
     private final Map<UUID, Integer> playerTrailTicks = new HashMap<>();
 
+    /** Per-player tick counters for swim trails (reset when they stop swimming). */
+    private final Map<UUID, Integer> swimTicks = new HashMap<>();
+
+    /** Per-player previous location for swim roll estimation. */
+    private final Map<UUID, Location> swimPrevLocations = new HashMap<>();
+
     public ParticleTask(ElytraTrails plugin, TrailManager trailManager,
                         PlayerDataManager playerData, WorldGuardHook worldGuard) {
         this.plugin = plugin;
@@ -81,8 +87,16 @@ public class ParticleTask extends BukkitRunnable {
                 prevLocations.remove(uuid);
             }
 
+            // ── Swim trails ─────────────────────────────────
+            if (isSwimming(player)) {
+                tickSwimTrail(player, uuid);
+            } else {
+                swimTicks.remove(uuid);
+                swimPrevLocations.remove(uuid);
+            }
+
             // ── Player trails ───────────────────────────────
-            if (!isGlidingWithElytra(player)) {
+            if (!isGlidingWithElytra(player) && !isSwimming(player)) {
                 tickPlayerTrail(player, uuid);
             }
         }
@@ -119,7 +133,7 @@ public class ParticleTask extends BukkitRunnable {
         Vector right = new Vector(-Math.cos(yawRad), 0, -Math.sin(yawRad)).normalize();
 
         // Estimate roll from lateral velocity
-        double roll = estimateRoll(player, right);
+        double roll = estimateRoll(player, right, prevLocations);
 
         // Rotated up considering roll
         Vector up = new Vector(0, 1, 0);
@@ -140,6 +154,62 @@ public class ParticleTask extends BukkitRunnable {
         prevLocations.put(uuid, loc.clone());
 
         // ── Tick each emitter ────────────────────────────
+        for (Emitter emitter : trail.getEmitters()) {
+            if (pt % emitter.getInterval() != 0) continue;
+
+            List<Vector> anchors = resolveAnchors(emitter, leftWingTip, rightWingTip,
+                    feet, body, behind, rolledRight, rolledUp, forward);
+
+            for (Vector anchor : anchors) {
+                spawnEmitter(player, loc, anchor, emitter, pt, forward, rolledRight, rolledUp);
+            }
+        }
+    }
+
+    /* ================================================================== */
+    /*  Swim trail tick                                                    */
+    /* ================================================================== */
+
+    private void tickSwimTrail(Player player, UUID uuid) {
+        String trailId = playerData.getActiveTrail(uuid, TrailCategory.SWIM);
+        if (trailId == null) return;
+
+        Trail trail = trailManager.getTrail(trailId);
+        if (trail == null || trail.getCategory() != TrailCategory.SWIM) return;
+
+        if (!player.hasPermission("elytratrails.use.swim")) {
+            return;
+        }
+
+        if (!playerData.hasTrailAccess(player, trail)) {
+            return;
+        }
+
+        int pt = swimTicks.merge(uuid, 1, Integer::sum);
+
+        Location loc = player.getLocation();
+        double yawRad = Math.toRadians(loc.getYaw());
+
+        Vector forward = loc.getDirection().normalize();
+        Vector right = new Vector(-Math.cos(yawRad), 0, -Math.sin(yawRad)).normalize();
+        double roll = estimateRoll(player, right, swimPrevLocations);
+
+        Vector up = new Vector(0, 1, 0);
+        Vector rolledRight = right.clone().multiply(Math.cos(roll)).add(up.clone().multiply(Math.sin(roll)));
+        Vector rolledUp    = up.clone().multiply(Math.cos(roll)).subtract(right.clone().multiply(Math.sin(roll)));
+
+        Vector leftWingTip  = rolledRight.clone().multiply(-WING_LENGTH)
+                .add(forward.clone().multiply(WING_BACK))
+                .add(rolledUp.clone().multiply(WING_UP));
+        Vector rightWingTip = rolledRight.clone().multiply(WING_LENGTH)
+                .add(forward.clone().multiply(WING_BACK))
+                .add(rolledUp.clone().multiply(WING_UP));
+        Vector feet   = new Vector(0, FEET_DOWN, 0);
+        Vector behind = forward.clone().multiply(-BEHIND_DIST);
+        Vector body   = new Vector(0, 0, 0);
+
+        swimPrevLocations.put(uuid, loc.clone());
+
         for (Emitter emitter : trail.getEmitters()) {
             if (pt % emitter.getInterval() != 0) continue;
 
@@ -471,14 +541,18 @@ public class ParticleTask extends BukkitRunnable {
      * Estimate body roll from lateral velocity.
      * Returns angle in radians; positive = tilting right.
      */
-    private double estimateRoll(Player player, Vector right) {
-        Location prev = prevLocations.get(player.getUniqueId());
+    private double estimateRoll(Player player, Vector right, Map<UUID, Location> prevLocMap) {
+        Location prev = prevLocMap.get(player.getUniqueId());
         if (prev == null) return 0;
 
         Vector velocity = player.getLocation().toVector().subtract(prev.toVector());
         double lateral = velocity.dot(right); // positive = moving right
         // Clamp to a sensible roll angle (max ~35°)
         return Math.max(-0.6, Math.min(0.6, lateral * 3.0));
+    }
+
+    private boolean isSwimming(Player player) {
+        return player.isSwimming() && player.isInWater();
     }
 
     private boolean isGlidingWithElytra(Player player) {

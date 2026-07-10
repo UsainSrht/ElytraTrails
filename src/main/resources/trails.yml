@@ -9,7 +9,7 @@
 #
 #   display-name:           Display name (supports & color codes).
 #   type:                   STATIC | ANIMATED | COMPLEX
-#   category:               ELYTRA | PLAYER | ARROW  (default: ELYTRA)
+#   category:               ELYTRA | PLAYER | SWIM | ARROW  (default: ELYTRA)
 #   player-mode:            NORMAL | STANDBY | MOVING  (only for PLAYER trails)
 #                           NORMAL  — always plays on foot
 #                           STANDBY — only plays when NOT moving
@@ -1161,6 +1161,218 @@ trails:
           - "#FF69B4"
           - "#00FFFF"
         color-cycle-rate: 2
+
+
+  # ╔═════════════════════════════════════════════════════════════════════╗
+  # ║                       SWIM TRAILS                                  ║
+  # ╚═════════════════════════════════════════════════════════════════════╝
+  # These play while swimming in water. category must be SWIM.
+  # Uses the same spawn points and shapes as elytra trails.
+
+  # ── Aqua Dust  (free starter trail) ────────────────────────────────
+  aqua_dust:
+    display-name: "<aqua>Aqua Dust"
+    type: STATIC
+    category: SWIM
+    price: 0
+    icon: PRISMARINE_CRYSTALS
+    emitters:
+      wing_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.2
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#00CED1" ]
+
+  # ── Ocean Wake ─────────────────────────────────────────────────────
+  ocean_wake:
+    display-name: "<blue>Ocean Wake"
+    type: STATIC
+    category: SWIM
+    price: 100
+    icon: HEART_OF_THE_SEA
+    emitters:
+      wake:
+        spawn-point: BEHIND
+        particle: BUBBLE
+        amount: 4
+        interval: 1
+        speed: 0.05
+        offset: { x: 0.15, y: 0.1, z: 0.15 }
+      trail_dust:
+        spawn-point: BEHIND
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.0
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors: [ "#1E90FF", "#00BFFF" ]
+        color-cycle-rate: 2
+
+  # ── Coral Stream ───────────────────────────────────────────────────
+  coral_stream:
+    display-name: "<light_purple>Coral Stream"
+    type: ANIMATED
+    category: SWIM
+    price: 200
+    icon: BRAIN_CORAL
+    emitters:
+      wing_stream:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.3
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors:
+          - "#FF6B6B"
+          - "#FF8C69"
+          - "#FFB347"
+          - "#FF69B4"
+        color-cycle-rate: 2
+
+  # ── Deep Sea Spiral ────────────────────────────────────────────────
+  deep_sea_spiral:
+    display-name: "<dark_aqua>Deep Sea Spiral"
+    type: COMPLEX
+    category: SWIM
+    price: 350
+    icon: DARK_PRISMARINE
+    emitters:
+      body_spiral:
+        spawn-point: BODY
+        particle: DUST
+        amount: 1
+        interval: 1
+        speed: 0
+        size: 1.4
+        shape: spiral
+        spiral-radius: 0.6
+        spiral-speed: 0.15
+        spiral-points: 4
+        colors:
+          - "#003366"
+          - "#006699"
+          - "#0099CC"
+        color-cycle-rate: 2
+
+  # ── Dolphin Fin ────────────────────────────────────────────────────
+  dolphin_fin:
+    display-name: "<aqua><bold>Dolphin Fin"
+    type: ANIMATED
+    category: SWIM
+    price: 400
+    icon: DOLPHIN_SPAWN_EGG
+    emitters:
+      fin_tips:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.5
+        wing-coverage: 0.5
+        offset: { x: 0.08, y: 0.08, z: 0.08 }
+        colors:
+          - "#00FFFF"
+          - "#87CEEB"
+          - "#FFFFFF"
+        color-cycle-rate: 1
+      splash:
+        spawn-point: BEHIND
+        particle: SPLASH
+        amount: 2
+        interval: 2
+        speed: 0.02
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+
+  # ── Bioluminescence ────────────────────────────────────────────────
+  bioluminescence:
+    display-name: "<dark_aqua><bold>Bioluminescence"
+    type: COMPLEX
+    category: SWIM
+    price: 500
+    icon: GLOW_INK_SAC
+    emitters:
+      glow_wings:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.6
+        offset: { x: 0.12, y: 0.12, z: 0.12 }
+        colors:
+          - "#00FFCC"
+          - "#66FFCC"
+          - "#CCFFFF"
+        color-cycle-rate: 1
+      glow_trail:
+        spawn-point: BEHIND
+        particle: GLOW
+        amount: 2
+        interval: 1
+        speed: 0.01
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+
+  # ── Tropical Wave ──────────────────────────────────────────────────
+  tropical_wave:
+    display-name: "<yellow>Tropical Wave"
+    type: ANIMATED
+    category: SWIM
+    price: 600
+    icon: TROPICAL_FISH
+    emitters:
+      wave_wings:
+        spawn-point: WINGS
+        particle: DUST
+        amount: 2
+        interval: 1
+        speed: 0
+        size: 1.3
+        shape: wave
+        wave-amplitude: 0.4
+        wave-frequency: 0.2
+        colors:
+          - "#FFD700"
+          - "#FF6347"
+          - "#00FA9A"
+          - "#1E90FF"
+        color-cycle-rate: 2
+
+  # ── Kraken Ink ─────────────────────────────────────────────────────
+  kraken_ink:
+    display-name: "<dark_purple><bold>Kraken Ink"
+    type: COMPLEX
+    category: SWIM
+    price: 750
+    icon: INK_SAC
+    emitters:
+      ink_wings:
+        spawn-point: WINGS
+        particle: SQUID_INK
+        amount: 2
+        interval: 2
+        speed: 0.02
+        offset: { x: 0.15, y: 0.15, z: 0.15 }
+      dark_dust:
+        spawn-point: BEHIND
+        particle: DUST
+        amount: 3
+        interval: 1
+        speed: 0
+        size: 1.5
+        offset: { x: 0.1, y: 0.1, z: 0.1 }
+        colors:
+          - "#1A0033"
+          - "#330066"
+          - "#4B0082"
+        color-cycle-rate: 3
 
 
   # ╔═════════════════════════════════════════════════════════════════════╗

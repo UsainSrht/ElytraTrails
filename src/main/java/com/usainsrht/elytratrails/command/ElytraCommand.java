@@ -62,7 +62,7 @@ public class ElytraCommand implements TabExecutor {
         subcommandAliases.clear();
 
         FileConfiguration config = plugin.getConfig();
-        String[] defaultSubcommands = {"gui", "elytra", "player", "arrow", "reload", "give"};
+        String[] defaultSubcommands = {"gui", "elytra", "player", "swim", "arrow", "reload", "give"};
 
         for (String sub : defaultSubcommands) {
             String path = "command.subcommands." + sub;
@@ -101,6 +101,7 @@ public class ElytraCommand implements TabExecutor {
             case "gui"    -> { return handleHub(sender); }
             case "elytra" -> { return handleSubGUI(sender, TrailCategory.ELYTRA); }
             case "player" -> { return handleSubGUI(sender, TrailCategory.PLAYER); }
+            case "swim"   -> { return handleSubGUI(sender, TrailCategory.SWIM);   }
             case "arrow"  -> { return handleSubGUI(sender, TrailCategory.ARROW);  }
             case "reload" -> { return handleReload(sender); }
             case "give"   -> { return handleGive(sender, args); }
@@ -194,6 +195,7 @@ public class ElytraCommand implements TabExecutor {
             subs.add(subcommandNames.get("gui"));
             subs.add(subcommandNames.get("elytra"));
             subs.add(subcommandNames.get("player"));
+            subs.add(subcommandNames.get("swim"));
             subs.add(subcommandNames.get("arrow"));
             if (sender.hasPermission("elytratrails.admin")) {
                 subs.add(subcommandNames.get("reload"));

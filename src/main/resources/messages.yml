@@ -11,7 +11,7 @@ messages:
   no-permission-trail: "<red>You don't have permission to open the trail menu."
   no-permission-reload: "<red>You don't have permission to reload."
   no-permission-give: "<red>You don't have permission to use this command."
-  unknown-command: "<red>Unknown sub-command. Use: gui, elytra, player, arrow, reload, give"
+  unknown-command: "<red>Unknown sub-command. Use: gui, elytra, player, swim, arrow, reload, give"
   only-players: "<red>Only players can open the cosmetics menu."
   only-players-gui: "<red>Only players can open the trail GUI."
   config-reloaded: "<green>ElytraTrails configuration reloaded!"

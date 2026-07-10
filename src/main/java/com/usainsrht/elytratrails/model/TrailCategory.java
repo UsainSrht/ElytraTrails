@@ -8,6 +8,8 @@ public enum TrailCategory {
     ELYTRA,
     /** Plays around the player on foot (see {@link PlayerTrailMode} for sub-modes). */
     PLAYER,
+    /** Plays while the player is swimming in water. */
+    SWIM,
     /** Plays along the path of a thrown projectile. */
     ARROW
 }

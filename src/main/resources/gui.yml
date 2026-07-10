@@ -9,6 +9,7 @@ cosmetics-gui:
     filler:
       material: BLACK_STAINED_GLASS_PANE
       display-name: " "
+      hide-tooltip: true
     info:
       material: BOOK
       slot: 10
@@ -27,6 +28,9 @@ cosmetics-gui:
         - "<yellow>  Moving  <dark_gray>— only when walking/running"
         - "<yellow>  Normal  <dark_gray>— always active"
         - ""
+        - "<white><bold>Swimming Trails</bold>"
+        - "<gray>  Play while you swim in water."
+        - ""
         - "<white><bold>Arrow Trails</bold>"
         - "<gray>  Follow any projectile you throw."
         - ""
@@ -43,6 +47,18 @@ cosmetics-gui:
         - "<yellow>Modes: <white>Standby, Moving, Normal"
         - ""
         - "<yellow>» <green>Click to open!"
+    swim-trails:
+      material: PRISMARINE_SHARD
+      slot: 13
+      display-name: "<blue><bold>✦ Swimming Trails</bold>"
+      lore:
+        - "<gray>Spectacular effects while"
+        - "<gray>swimming through water."
+        - ""
+        - "<gray>Wake trails, wing streams,"
+        - "<gray>spirals and more!"
+        - ""
+        - "<yellow>» <blue>Click to open!"
     arrow-trails:
       material: ARROW
       slot: 14
@@ -95,14 +111,17 @@ trail-gui:
   titles:
     ELYTRA: "<aqua><bold>Elytra Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
     PLAYER: "<green><bold>Player Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
+    SWIM: "<blue><bold>Swimming Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
     ARROW: "<gold><bold>Arrow Trails <dark_gray>(<gray>%page%/%total_pages%<dark_gray>)"
   filler-materials:
     ELYTRA: CYAN_STAINED_GLASS_PANE
     PLAYER: GREEN_STAINED_GLASS_PANE
+    SWIM: LIGHT_BLUE_STAINED_GLASS_PANE
     ARROW: ORANGE_STAINED_GLASS_PANE
   items:
     filler:
       display-name: " "
+      hide-tooltip: true
     back:
       material: ARROW
       slot: 45

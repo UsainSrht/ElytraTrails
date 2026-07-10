@@ -2,7 +2,7 @@ name: ElytraTrails
 version: '2.0'
 main: com.usainsrht.elytratrails.ElytraTrails
 api-version: '1.21'
-description: Cosmetic particle trails — elytra, player, and arrow/projectile trails.
+description: Cosmetic particle trails — elytra, player, swimming, and arrow/projectile trails.
 softdepend:
   - Vault
   - WorldGuard
@@ -16,6 +16,9 @@ permissions:
     default: true
   elytratrails.buy:
     description: Allows purchasing trails through the GUI.
+    default: true
+  elytratrails.use.swim:
+    description: Allows swimming trail particles to render.
     default: true
   elytratrails.trail.*:
     description: Grants access to all trails.

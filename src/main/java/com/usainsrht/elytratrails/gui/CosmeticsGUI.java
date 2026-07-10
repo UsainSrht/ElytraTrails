@@ -56,7 +56,8 @@ public class CosmeticsGUI {
         // Fill all slots with filler
         Material fillerMat = getMaterial(cm.getGuiConfig().getString("cosmetics-gui.items.filler.material"), Material.BLACK_STAINED_GLASS_PANE);
         String fillerName = cm.getGuiConfig().getString("cosmetics-gui.items.filler.display-name", " ");
-        ItemStack filler = makeItem(fillerMat, MiniMessage.miniMessage().deserialize(fillerName), Collections.emptyList());
+        boolean fillerHideTooltip = cm.getGuiConfig().getBoolean("cosmetics-gui.items.filler.hide-tooltip", true);
+        ItemStack filler = makeFiller(fillerMat, fillerName, fillerHideTooltip);
         for (int i = 0; i < size; i++) {
             inv.setItem(i, filler);
         }
@@ -79,6 +80,9 @@ public class CosmeticsGUI {
                         "<yellow>  Moving  <dark_gray>— only when walking/running",
                         "<yellow>  Normal  <dark_gray>— always active",
                         "",
+                        "<white><bold>Swimming Trails</bold>",
+                        "<gray>  Play while you swim in water.",
+                        "",
                         "<white><bold>Arrow Trails</bold>",
                         "<gray>  Follow any projectile you throw.",
                         "",
@@ -98,6 +102,21 @@ public class CosmeticsGUI {
                         "<yellow>Modes: <white>Standby, Moving, Normal",
                         "",
                         "<yellow>» <green>Click to open!"
+                    ), null, null));
+        }
+
+        // ── Swimming Trails ───────────────────────────────
+        int swimSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.swim-trails.slot", 13);
+        if (swimSlot >= 0 && swimSlot < size) {
+            inv.setItem(swimSlot, makeItemFromConfig(cm, "cosmetics-gui.items.swim-trails", Material.PRISMARINE_SHARD,
+                    "<blue><bold>✦ Swimming Trails</bold>", Arrays.asList(
+                        "<gray>Spectacular effects while",
+                        "<gray>swimming through water.",
+                        "",
+                        "<gray>Wake trails, wing streams,",
+                        "<gray>spirals and more!",
+                        "",
+                        "<yellow>» <blue>Click to open!"
                     ), null, null));
         }
 
@@ -146,6 +165,7 @@ public class CosmeticsGUI {
         ConfigManager cm = plugin.getConfigManager();
         int elytraSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.elytra-trails.slot", 16);
         int playerSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.player-trails.slot", 12);
+        int swimSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.swim-trails.slot", 13);
         int arrowSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.arrow-trails.slot", 14);
         int skinSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.skin-change.slot", 22);
 
@@ -153,6 +173,8 @@ public class CosmeticsGUI {
             trailGUI.open(player, 0, TrailCategory.ELYTRA);
         } else if (slot == playerSlot) {
             trailGUI.open(player, 0, TrailCategory.PLAYER);
+        } else if (slot == swimSlot) {
+            trailGUI.open(player, 0, TrailCategory.SWIM);
         } else if (slot == arrowSlot) {
             trailGUI.open(player, 0, TrailCategory.ARROW);
         } else if (slot == skinSlot) {
@@ -349,6 +371,18 @@ public class CosmeticsGUI {
         }
 
         return makeItem(mat, displayName, lore);
+    }
+
+    private ItemStack makeFiller(Material mat, String name, boolean hideTooltip) {
+        ItemStack item = new ItemStack(mat);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.displayName(MiniMessage.miniMessage().deserialize(name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+            meta.setHideTooltip(hideTooltip);
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     private ItemStack makeItem(Material mat, Component name, List<Component> lore) {

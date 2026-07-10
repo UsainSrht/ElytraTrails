@@ -5,7 +5,7 @@
 # ── Player Trails — WorldGuard Region Filtering ──────────────────────
 #
 # Controls where Player Trails are allowed to display.
-# This setting ONLY affects Player Trails (not elytra or arrow trails).
+# This setting ONLY affects Player Trails (not elytra, swim, or arrow trails).
 #
 # region-mode:
 #   WHITELIST — Player trails are ONLY shown inside the listed regions.
@@ -64,6 +64,9 @@ command:
       aliases: []
     player:
       name: "player"
+      aliases: []
+    swim:
+      name: "swim"
       aliases: []
     arrow:
       name: "arrow"
