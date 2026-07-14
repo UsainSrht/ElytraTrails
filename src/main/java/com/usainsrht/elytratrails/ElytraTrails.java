@@ -23,9 +23,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class ElytraTrails extends JavaPlugin {
 
@@ -151,15 +152,16 @@ public final class ElytraTrails extends JavaPlugin {
         Map<String, Command> knownCommands = getKnownCommands(commandMap);
         if (knownCommands == null) return;
 
-        List<String> keysToRemove = new ArrayList<>();
-        for (Map.Entry<String, Command> entry : knownCommands.entrySet()) {
-            if (entry.getValue() instanceof DynamicCommand) {
-                entry.getValue().unregister(commandMap);
-                keysToRemove.add(entry.getKey());
+        Set<DynamicCommand> commandsToRemove = new LinkedHashSet<>();
+        synchronized (knownCommands) {
+            for (Command command : knownCommands.values()) {
+                if (command instanceof DynamicCommand dynamicCommand) {
+                    commandsToRemove.add(dynamicCommand);
+                }
             }
         }
-        for (String key : keysToRemove) {
-            knownCommands.remove(key);
+        for (DynamicCommand command : commandsToRemove) {
+            command.unregister(commandMap);
         }
     }
 
