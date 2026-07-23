@@ -16,17 +16,13 @@ import com.usainsrht.elytratrails.trail.ParticleTask;
 import com.usainsrht.elytratrails.trail.ProjectileTrailTask;
 import com.usainsrht.elytratrails.skins.SkinsRestorerHook;
 import com.usainsrht.elytratrails.skin.SkinChangePricing;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.lang.reflect.Field;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public final class ElytraTrails extends JavaPlugin {
 
@@ -115,6 +111,7 @@ public final class ElytraTrails extends JavaPlugin {
     }
 
     private ElytraCommand elytraCommand;
+    private DynamicCommand registeredCommand;
 
     public void registerCommands() {
         unregisterCommands();
@@ -143,26 +140,18 @@ public final class ElytraTrails extends JavaPlugin {
         CommandMap commandMap = getCommandMap();
         if (commandMap != null) {
             commandMap.register("elytratrails", dynamicCommand);
+            registeredCommand = dynamicCommand;
         }
     }
 
     public void unregisterCommands() {
-        CommandMap commandMap = getCommandMap();
-        if (commandMap == null) return;
-        Map<String, Command> knownCommands = getKnownCommands(commandMap);
-        if (knownCommands == null) return;
+        if (registeredCommand == null) return;
 
-        Set<DynamicCommand> commandsToRemove = new LinkedHashSet<>();
-        synchronized (knownCommands) {
-            for (Command command : knownCommands.values()) {
-                if (command instanceof DynamicCommand dynamicCommand) {
-                    commandsToRemove.add(dynamicCommand);
-                }
-            }
+        CommandMap commandMap = getCommandMap();
+        if (commandMap != null) {
+            registeredCommand.unregister(commandMap);
         }
-        for (DynamicCommand command : commandsToRemove) {
-            command.unregister(commandMap);
-        }
+        registeredCommand = null;
     }
 
     private CommandMap getCommandMap() {
@@ -176,21 +165,23 @@ public final class ElytraTrails extends JavaPlugin {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Command> getKnownCommands(CommandMap commandMap) {
-        try {
-            Field knownCommandsField = SimpleCommandMap.class.getDeclaredField("knownCommands");
-            knownCommandsField.setAccessible(true);
-            return (Map<String, Command>) knownCommandsField.get(commandMap);
-        } catch (Exception e) {
-            try {
-                Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
-                knownCommandsField.setAccessible(true);
-                return (Map<String, Command>) knownCommandsField.get(commandMap);
-            } catch (Exception ex) {
-                getLogger().severe("Could not retrieve knownCommands map: " + ex.getMessage());
-                return null;
-            }
+    /**
+     * Saves config.yml from the jar only when it is not already present in the data folder.
+     */
+    public void saveDefaultConfigIfMissing() {
+        File file = new File(getDataFolder(), "config.yml");
+        if (!file.exists()) {
+            saveDefaultConfig();
+        }
+    }
+
+    /**
+     * Saves a bundled resource only when it is not already present in the data folder.
+     */
+    public void saveResourceIfMissing(String resourcePath) {
+        File file = new File(getDataFolder(), resourcePath);
+        if (!file.exists()) {
+            saveResource(resourcePath, false);
         }
     }
 

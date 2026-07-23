@@ -37,7 +37,7 @@ public class TrailManager {
      * Load or reload config.yml (region filter settings).
      */
     public void loadConfig() {
-        plugin.saveDefaultConfig();
+        plugin.saveDefaultConfigIfMissing();
         plugin.reloadConfig();
         FileConfiguration cfg = plugin.getConfig();
 
@@ -55,7 +55,7 @@ public class TrailManager {
         trails.clear();
 
         // Save default if not present
-        plugin.saveResource("trails.yml", false);
+        plugin.saveResourceIfMissing("trails.yml");
 
         File file = new File(plugin.getDataFolder(), "trails.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);

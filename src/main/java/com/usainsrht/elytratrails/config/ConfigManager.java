@@ -24,8 +24,8 @@ public class ConfigManager {
 
     public void reload() {
         // Save default config files if they don't exist
-        plugin.saveResource("gui.yml", false);
-        plugin.saveResource("messages.yml", false);
+        plugin.saveResourceIfMissing("gui.yml");
+        plugin.saveResourceIfMissing("messages.yml");
 
         // Load / reload YAML configurations
         File guiFile = new File(plugin.getDataFolder(), "gui.yml");
