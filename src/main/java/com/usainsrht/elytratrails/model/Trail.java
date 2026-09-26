@@ -16,6 +16,7 @@ public class Trail {
 
     private final String id;
     private final String displayName;
+    private final List<String> lore;
     private final TrailType trailType;
     private final TrailCategory category;
     private final PlayerTrailMode playerTrailMode;
@@ -24,11 +25,12 @@ public class Trail {
     private final Material icon;
     private final String permission;
 
-    public Trail(String id, String displayName, TrailType trailType,
+    public Trail(String id, String displayName, List<String> lore, TrailType trailType,
                  TrailCategory category, PlayerTrailMode playerTrailMode,
                  List<Emitter> emitters, double price, Material icon) {
         this.id = id;
         this.displayName = displayName;
+        this.lore = lore != null ? Collections.unmodifiableList(new ArrayList<>(lore)) : Collections.emptyList();
         this.trailType = trailType;
         this.category = category;
         this.playerTrailMode = playerTrailMode;
@@ -38,11 +40,18 @@ public class Trail {
         this.permission = "elytratrails.trail." + id;
     }
 
+    public Trail(String id, String displayName, TrailType trailType,
+                 TrailCategory category, PlayerTrailMode playerTrailMode,
+                 List<Emitter> emitters, double price, Material icon) {
+        this(id, displayName, Collections.emptyList(), trailType, category, playerTrailMode, emitters, price, icon);
+    }
+
     /**
      * Parse a Trail from a ConfigurationSection keyed by its id.
      */
     public static Trail fromConfig(String id, ConfigurationSection section) {
         String displayName = section.getString("display-name", id);
+        List<String> lore = section.contains("lore") ? section.getStringList("lore") : Collections.emptyList();
 
         TrailType trailType;
         try {
@@ -86,13 +95,14 @@ public class Trail {
             }
         }
 
-        return new Trail(id, displayName, trailType, category, playerTrailMode, emitters, price, icon);
+        return new Trail(id, displayName, lore, trailType, category, playerTrailMode, emitters, price, icon);
     }
 
     // ── Getters ──────────────────────────────────────────────
 
     public String getId() { return id; }
     public String getDisplayName() { return displayName; }
+    public List<String> getLore() { return lore; }
     public TrailType getTrailType() { return trailType; }
     public TrailCategory getCategory() { return category; }
     public PlayerTrailMode getPlayerTrailMode() { return playerTrailMode; }

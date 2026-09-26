@@ -164,12 +164,20 @@ trail-item:
     active: "<green>★ %display_name% <green>★"
     unlocked: "<white>%display_name%"
     locked: "<red>✖ %display_name%"
+  types:
+    STATIC: "<white>Static"
+    ANIMATED: "<white>Animated"
+    COMPLEX: "<white>Complex"
+  modes:
+    NORMAL: "<white>Normal"
+    STANDBY: "<white>Standby"
+    MOVING: "<white>Moving"
   lore:
-    - "<gray>Type: <white>%type%"
+    - "<gray>Type: %type%"
     - "%mode_line%"
     - ""
     - "%status%"
-  mode-line-format: "<gray>Mode: <white>%mode%"
+  mode-line-format: "<gray>Mode: %mode%"
   status-lines:
     active:
       - "<green>▶ Currently Active"

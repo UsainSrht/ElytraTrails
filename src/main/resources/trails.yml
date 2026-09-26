@@ -7,7 +7,9 @@
 #
 # ── Trail-level config keys ──────────────────────────────────────────────
 #
-#   display-name:           Display name (supports & color codes).
+#   display-name:           Display name (supports & color codes and MiniMessage).
+#   lore:                   Optional list of lore lines (supports MiniMessage).
+#                           If present, prepended to the start of GUI item lore.
 #   type:                   STATIC | ANIMATED | COMPLEX
 #   category:               ELYTRA | PLAYER | SWIM | ARROW  (default: ELYTRA)
 #   player-mode:            NORMAL | STANDBY | MOVING  (only for PLAYER trails)
