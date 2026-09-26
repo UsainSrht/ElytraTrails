@@ -7,6 +7,8 @@ import com.usainsrht.elytratrails.model.Trail;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -15,6 +17,8 @@ import org.bukkit.util.Vector;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Synchronous ticker that spawns particle trails on active projectiles.
@@ -22,6 +26,11 @@ import java.util.concurrent.ThreadLocalRandom;
  * on launch and removed on hit/land/expire.
  */
 public class ProjectileTrailTask extends BukkitRunnable {
+
+    private static final Pattern DURATION_PATTERN = Pattern.compile(
+            "(\\d+(?:\\.\\d+)?)\\s*(m(?:in(?:ute)?s?)?|s(?:ec(?:ond)?s?)?|t(?:ick?s?)?|h(?:(?:ou)?rs?)?)",
+            Pattern.CASE_INSENSITIVE
+    );
 
     /** Maps projectile UUID → the Trail to render */
     private final Map<UUID, Trail> activeProjectiles = new ConcurrentHashMap<>();
@@ -32,8 +41,94 @@ public class ProjectileTrailTask extends BukkitRunnable {
 
     private final ElytraTrails plugin;
 
+    /** Ticks to wait before particles start spawning (first N ticks spawn nothing). Default 5. */
+    private int delayTicks = 5;
+    /** Maximum lifetime in ticks before the trail stops and unregisters. Default 1200 ticks (1 minute). */
+    private int maxLifetimeTicks = 1200;
+
     public ProjectileTrailTask(ElytraTrails plugin) {
         this.plugin = plugin;
+        loadConfig();
+    }
+
+    /**
+     * Loads/reloads delay and max-lifetime settings from config.yml.
+     */
+    public void loadConfig() {
+        FileConfiguration config = plugin.getConfig();
+        this.delayTicks = parseConfigTicks(config, "arrow-trails.delay", "arrow-trails.delay-ticks", 5);
+        this.maxLifetimeTicks = parseConfigTicks(config, "arrow-trails.max-lifetime", "arrow-trails.max-lifetime-ticks", 1200);
+    }
+
+    private int parseConfigTicks(FileConfiguration config, String path, String altPath, int def) {
+        Object val = config.get(path);
+        if (val == null && altPath != null) {
+            val = config.get(altPath);
+        }
+        if (val == null) {
+            val = config.get(path.replace("arrow-trails.", "arrow-trail."));
+        }
+        if (val == null) {
+            val = config.get(path.replace("arrow-trails.", "arrow."));
+        }
+        if (val == null) {
+            return def;
+        }
+        if (val instanceof Number num) {
+            return num.intValue();
+        }
+        return parseDuration(val.toString(), def);
+    }
+
+    public static int parseDuration(String str, int defaultTicks) {
+        if (str == null || str.isBlank()) {
+            return defaultTicks;
+        }
+        str = str.trim();
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            Matcher m = DURATION_PATTERN.matcher(str);
+            double totalTicks = 0;
+            boolean matched = false;
+            while (m.find()) {
+                matched = true;
+                double val = Double.parseDouble(m.group(1));
+                String unit = m.group(2).toLowerCase();
+                if (unit.startsWith("m") && !unit.startsWith("ms")) {
+                    totalTicks += val * 60 * 20; // 1 min = 1200 ticks
+                } else if (unit.startsWith("s")) {
+                    totalTicks += val * 20;      // 1 sec = 20 ticks
+                } else if (unit.startsWith("h")) {
+                    totalTicks += val * 3600 * 20;
+                } else if (unit.startsWith("t")) {
+                    totalTicks += val;           // ticks
+                }
+            }
+            if (matched) {
+                return (int) Math.round(totalTicks);
+            }
+        } catch (Exception ignored) {}
+
+        return defaultTicks;
+    }
+
+    public int getDelayTicks() {
+        return delayTicks;
+    }
+
+    public void setDelayTicks(int delayTicks) {
+        this.delayTicks = delayTicks;
+    }
+
+    public int getMaxLifetimeTicks() {
+        return maxLifetimeTicks;
+    }
+
+    public void setMaxLifetimeTicks(int maxLifetimeTicks) {
+        this.maxLifetimeTicks = maxLifetimeTicks;
     }
 
     // ── Registration ────────────────────────────────────────
@@ -83,10 +178,26 @@ public class ProjectileTrailTask extends BukkitRunnable {
             }
 
             // Remove dead / landed projectiles
-            if (entity == null || entity.isDead() || !entity.isValid()) {
+            if (entity == null || entity.isDead() || !entity.isValid()
+                    || (entity instanceof AbstractArrow arrow && arrow.isInBlock())) {
                 it.remove();
                 projectileTicks.remove(uid);
                 projectileShooters.remove(uid);
+                continue;
+            }
+
+            int pt = projectileTicks.merge(uid, 1, Integer::sum);
+
+            // Max lifetime check (stops and unregisters old projectiles)
+            if (maxLifetimeTicks > 0 && pt > maxLifetimeTicks) {
+                it.remove();
+                projectileTicks.remove(uid);
+                projectileShooters.remove(uid);
+                continue;
+            }
+
+            // Initial flight delay check (first N ticks do not spawn particles)
+            if (delayTicks > 0 && pt <= delayTicks) {
                 continue;
             }
 
@@ -96,7 +207,6 @@ public class ProjectileTrailTask extends BukkitRunnable {
                 shooter = p;
             }
 
-            int pt = projectileTicks.merge(uid, 1, Integer::sum);
             Location loc = entity.getLocation();
             Vector velocity = entity.getVelocity().normalize();
 

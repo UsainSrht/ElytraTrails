@@ -26,6 +26,21 @@ player-trails:
   #   - lobby
   #   - arena_1
 
+# ── Arrow Trails ─────────────────────────────────────────────────────
+#
+# delay:
+#   Number of ticks to wait before projectile trail particles begin spawning.
+#   During the first ticks of flight, no particles will spawn (default: 5 ticks = 0.25s).
+#
+# max-lifetime:
+#   Maximum lifetime of an arrow trail in ticks before it stops and unregisters.
+#   Default: 1200 ticks (1 minute). Set to 0 to disable.
+#   Supports tick numbers (e.g. 1200) or duration strings (e.g. "1m", "60s").
+#
+arrow-trails:
+  delay: 5
+  max-lifetime: 1200
+
 # ── Vanish Compatibility ──────────────────────────────────────────────
 #
 # When enabled, trails will respect Paper's Vanish API.

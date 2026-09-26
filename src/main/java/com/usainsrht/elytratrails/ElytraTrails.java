@@ -234,4 +234,12 @@ public final class ElytraTrails extends JavaPlugin {
     public boolean isRespectVanish() {
         return getConfig().getBoolean("respect-vanish", true);
     }
+
+    public int getArrowTrailsDelay() {
+        return projectileTrailTask != null ? projectileTrailTask.getDelayTicks() : 5;
+    }
+
+    public int getArrowTrailsMaxLifetime() {
+        return projectileTrailTask != null ? projectileTrailTask.getMaxLifetimeTicks() : 1200;
+    }
 }

@@ -149,6 +149,9 @@ public class ElytraCommand implements TabExecutor {
         trailManager.loadConfig();
         plugin.registerCommands();
         trailManager.loadTrails();
+        if (plugin.getProjectileTrailTask() != null) {
+            plugin.getProjectileTrailTask().loadConfig();
+        }
         sender.sendMessage(plugin.getConfigManager().getMessage("config-reloaded"));
         return true;
     }
