@@ -38,7 +38,7 @@ public class ParticleTask extends BukkitRunnable {
     private static final double WING_UP         = 0.15;  // slight upward tilt
     private static final double FEET_DOWN       = -0.8;  // feet below centre
     private static final double BEHIND_DIST     = 1.0;   // "behind" distance
-    private static final double MOVING_THRESHOLD = 0.08; // velocity magnitude for "moving"
+    private static final double MOVING_THRESHOLD_SQ = 0.0004; // (0.02 blocks/tick)^2 for player walking/sprinting
 
     private final ElytraTrails plugin;
     private final TrailManager trailManager;
@@ -56,6 +56,9 @@ public class ParticleTask extends BukkitRunnable {
 
     /** Per-player tick counters for player trails. */
     private final Map<UUID, Integer> playerTrailTicks = new HashMap<>();
+
+    /** Per-player previous location for player trail movement detection. */
+    private final Map<UUID, Location> playerPrevLocations = new HashMap<>();
 
     /** Per-player tick counters for swim trails (reset when they stop swimming). */
     private final Map<UUID, Integer> swimTicks = new HashMap<>();
@@ -76,6 +79,11 @@ public class ParticleTask extends BukkitRunnable {
     @Override
     public void run() {
         tick++;
+
+        // Periodic cleanup of offline player cache every 1200 ticks (~1 min)
+        if (tick % 1200 == 0) {
+            cleanupOfflinePlayers();
+        }
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
@@ -99,6 +107,9 @@ public class ParticleTask extends BukkitRunnable {
             // ── Player trails ───────────────────────────────
             if (!isGlidingWithElytra(player) && !isSwimming(player)) {
                 tickPlayerTrail(player, uuid);
+            } else {
+                playerTrailTicks.remove(uuid);
+                playerPrevLocations.remove(uuid);
             }
         }
     }
@@ -229,16 +240,28 @@ public class ParticleTask extends BukkitRunnable {
 
     private void tickPlayerTrail(Player player, UUID uuid) {
         String trailId = playerData.getActiveTrail(uuid, TrailCategory.PLAYER);
-        if (trailId == null) return;
+        if (trailId == null) {
+            playerTrailTicks.remove(uuid);
+            playerPrevLocations.remove(uuid);
+            return;
+        }
 
         Trail trail = trailManager.getTrail(trailId);
-        if (trail == null || trail.getCategory() != TrailCategory.PLAYER) return;
+        if (trail == null || trail.getCategory() != TrailCategory.PLAYER) {
+            playerTrailTicks.remove(uuid);
+            playerPrevLocations.remove(uuid);
+            return;
+        }
 
         if (!player.hasPermission("elytratrails.use.player")) {
+            playerTrailTicks.remove(uuid);
+            playerPrevLocations.remove(uuid);
             return;
         }
 
         if (!playerData.hasTrailAccess(player, trail)) {
+            playerTrailTicks.remove(uuid);
+            playerPrevLocations.remove(uuid);
             return;
         }
 
@@ -247,23 +270,58 @@ public class ParticleTask extends BukkitRunnable {
             boolean inRegion = worldGuard.isPlayerInRegions(player, trailManager.getRegionList());
             if (trailManager.isRegionWhitelist()) {
                 // Whitelist: must be in region to show trail
-                if (!inRegion) return;
+                if (!inRegion) {
+                    playerTrailTicks.remove(uuid);
+                    playerPrevLocations.remove(uuid);
+                    return;
+                }
             } else {
                 // Blacklist: must NOT be in region
-                if (inRegion) return;
+                if (inRegion) {
+                    playerTrailTicks.remove(uuid);
+                    playerPrevLocations.remove(uuid);
+                    return;
+                }
             }
         }
 
+        Location loc = player.getLocation();
+        Location prev = playerPrevLocations.put(uuid, loc.clone());
+
         // ── Movement check ───────────────────────────────
-        double speed = player.getVelocity().clone().setY(0).length();
-        boolean isMoving = speed > MOVING_THRESHOLD;
+        boolean isMoving = false;
+        if (prev != null && prev.getWorld() != null && prev.getWorld().equals(loc.getWorld())) {
+            double dx = loc.getX() - prev.getX();
+            double dz = loc.getZ() - prev.getZ();
+            double horizontalDistSq = dx * dx + dz * dz;
+
+            // Ignore extreme teleports (> 10 blocks in a single tick)
+            if (horizontalDistSq < 100.0) {
+                if (horizontalDistSq > MOVING_THRESHOLD_SQ) {
+                    isMoving = true;
+                } else {
+                    double dy = loc.getY() - prev.getY();
+                    if (Math.abs(dy) > 0.05 && (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001)) {
+                        isMoving = true;
+                    }
+                }
+            }
+        }
+
+        // Also check server-applied velocity (e.g. knockback, launch pads)
+        if (!isMoving) {
+            double velSpeedSq = player.getVelocity().clone().setY(0).lengthSquared();
+            if (velSpeedSq > MOVING_THRESHOLD_SQ) {
+                isMoving = true;
+            }
+        }
+
         PlayerTrailMode mode = trail.getPlayerTrailMode();
         if (mode == PlayerTrailMode.STANDBY && isMoving) return;
         if (mode == PlayerTrailMode.MOVING && !isMoving) return;
 
         int pt = playerTrailTicks.merge(uuid, 1, Integer::sum);
 
-        Location loc = player.getLocation();
         double yawRad = Math.toRadians(loc.getYaw());
         Vector forward = loc.getDirection().normalize();
         Vector right   = new Vector(-Math.cos(yawRad), 0, -Math.sin(yawRad)).normalize();
@@ -391,31 +449,24 @@ public class ParticleTask extends BukkitRunnable {
                              Emitter emitter, int pt) {
         Location spawnLoc = origin.clone().add(anchor);
         Color color = resolveColor(emitter, pt);
+        Object data = resolveParticleData(emitter, color);
 
-        if (emitter.getParticle() == Particle.DUST && color != null) {
-            Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            spawnParticle(player, spawnLoc, Particle.DUST,
+        if (emitter.isRandomDirection()) {
+            // Spawn one at a time with random velocity
+            for (int i = 0; i < emitter.getAmount(); i++) {
+                Vector dir = randomUnitVector().multiply(emitter.getRandomDirectionSpeed());
+                spawnParticle(player, spawnLoc, emitter.getParticle(),
+                        0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), data);
+            }
+        } else if (!emitter.getVelocity().isZero()) {
+            Vector v = emitter.getVelocity();
+            spawnParticle(player, spawnLoc, emitter.getParticle(),
+                    0, v.getX(), v.getY(), v.getZ(), 1, data);
+        } else {
+            spawnParticle(player, spawnLoc, emitter.getParticle(),
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed(), dust);
-        } else {
-            if (emitter.isRandomDirection()) {
-                // Spawn one at a time with random velocity
-                for (int i = 0; i < emitter.getAmount(); i++) {
-                    Vector dir = randomUnitVector().multiply(emitter.getRandomDirectionSpeed());
-                    spawnParticle(player, spawnLoc, emitter.getParticle(),
-                            0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), null);
-                }
-            } else if (!emitter.getVelocity().isZero()) {
-                Vector v = emitter.getVelocity();
-                spawnParticle(player, spawnLoc, emitter.getParticle(),
-                        0, v.getX(), v.getY(), v.getZ(), 1, null);
-            } else {
-                spawnParticle(player, spawnLoc, emitter.getParticle(),
-                        emitter.getAmount(),
-                        emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                        emitter.getSpeed(), null);
-            }
+                    emitter.getSpeed(), data);
         }
     }
 
@@ -442,14 +493,9 @@ public class ParticleTask extends BukkitRunnable {
             Location spawnLoc = origin.clone().add(anchor).add(spiralOff);
 
             Color color = resolveColor(emitter, pt + i);
-            if (emitter.getParticle() == Particle.DUST && color != null) {
-                Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-                spawnParticle(player, spawnLoc, Particle.DUST,
-                        emitter.getAmount(), 0, 0, 0, 0, dust);
-            } else {
-                spawnParticle(player, spawnLoc, emitter.getParticle(),
-                        emitter.getAmount(), 0, 0, 0, emitter.getSpeed(), null);
-            }
+            Object data = resolveParticleData(emitter, color);
+            spawnParticle(player, spawnLoc, emitter.getParticle(),
+                    emitter.getAmount(), 0, 0, 0, emitter.getSpeed(), data);
         }
     }
 
@@ -489,14 +535,9 @@ public class ParticleTask extends BukkitRunnable {
                                      Vector shapeOffset, Emitter emitter, int colorIdx) {
         Location spawnLoc = origin.clone().add(anchor).add(shapeOffset);
         Color color = resolveColor(emitter, colorIdx);
-        if (emitter.getParticle() == Particle.DUST && color != null) {
-            Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            spawnParticle(player, spawnLoc, Particle.DUST,
-                    1, 0, 0, 0, 0, dust);
-        } else {
-            spawnParticle(player, spawnLoc, emitter.getParticle(),
-                    1, 0, 0, 0, emitter.getSpeed(), null);
-        }
+        Object data = resolveParticleData(emitter, color);
+        spawnParticle(player, spawnLoc, emitter.getParticle(),
+                1, 0, 0, 0, emitter.getSpeed(), data);
     }
 
     /* ── Wave shape (sine wave along the wing) ────────────────────────── */
@@ -509,18 +550,11 @@ public class ParticleTask extends BukkitRunnable {
         Location spawnLoc = origin.clone().add(anchor).add(waveOff);
 
         Color color = resolveColor(emitter, pt);
-        if (emitter.getParticle() == Particle.DUST && color != null) {
-            Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            spawnParticle(player, spawnLoc, Particle.DUST,
-                    emitter.getAmount(),
-                    emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed(), dust);
-        } else {
-            spawnParticle(player, spawnLoc, emitter.getParticle(),
-                    emitter.getAmount(),
-                    emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed(), null);
-        }
+        Object data = resolveParticleData(emitter, color);
+        spawnParticle(player, spawnLoc, emitter.getParticle(),
+                emitter.getAmount(),
+                emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
+                emitter.getSpeed(), data);
     }
 
     /**
@@ -530,23 +564,82 @@ public class ParticleTask extends BukkitRunnable {
     private void spawnParticle(Player player, Location loc, Particle particle,
                                int count, double ox, double oy, double oz,
                                double speed, Object data) {
-        ParticleBuilder builder = new ParticleBuilder(particle)
-                .location(loc)
-                .count(count)
-                .offset(ox, oy, oz)
-                .extra(speed);
-        if (plugin.isRespectVanish() && player != null) {
-            builder.source(player);
+        try {
+            ParticleBuilder builder = new ParticleBuilder(particle)
+                    .location(loc)
+                    .count(count)
+                    .offset(ox, oy, oz)
+                    .extra(speed);
+            if (plugin.isRespectVanish() && player != null) {
+                builder.source(player);
+            }
+            if (data != null) {
+                builder.data(data);
+            } else if (particle.getDataType() == Float.class) {
+                builder.data(1.0f);
+            } else if (particle.getDataType() == Color.class) {
+                builder.data(Color.WHITE);
+            } else if (particle.getDataType() == Integer.class) {
+                builder.data(0);
+            }
+            builder.spawn();
+        } catch (Exception ignored) {
+            // Guard against unexpected particle spawning issues interrupting the tick loop
         }
-        if (data != null) {
-            builder.data(data);
-        }
-        builder.spawn();
     }
 
     /* ================================================================== */
     /*  Helpers                                                           */
     /* ================================================================== */
+
+    /**
+     * Resolves the appropriate data object required by Paper/Bukkit for the particle.
+     * Some particles (like DUST, DRAGON_BREATH, SCULK_CHARGE) require specific non-null data.
+     */
+    public static Object resolveParticleData(Emitter emitter, Color color) {
+        Particle particle = emitter.getParticle();
+        Class<?> dataType = particle.getDataType();
+        if (dataType == Void.class) {
+            return null;
+        }
+        if (dataType == Particle.DustOptions.class) {
+            return new Particle.DustOptions(color != null ? color : Color.WHITE, emitter.getSize());
+        }
+        if (dataType == Particle.DustTransition.class) {
+            return new Particle.DustTransition(color != null ? color : Color.WHITE, Color.WHITE, emitter.getSize());
+        }
+        if (dataType == Float.class) {
+            return emitter.getSize();
+        }
+        if (dataType == Color.class) {
+            return color != null ? color : Color.WHITE;
+        }
+        if (dataType == Integer.class) {
+            return 0;
+        }
+        return null;
+    }
+
+    /**
+     * Clean up cache maps for a disconnected player.
+     */
+    public void cleanup(UUID uuid) {
+        playerTicks.remove(uuid);
+        prevLocations.remove(uuid);
+        swimTicks.remove(uuid);
+        swimPrevLocations.remove(uuid);
+        playerTrailTicks.remove(uuid);
+        playerPrevLocations.remove(uuid);
+    }
+
+    private void cleanupOfflinePlayers() {
+        playerTicks.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+        prevLocations.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+        swimTicks.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+        swimPrevLocations.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+        playerTrailTicks.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+        playerPrevLocations.keySet().removeIf(id -> plugin.getServer().getPlayer(id) == null);
+    }
 
     /**
      * Resolve the current colour from the emitter's colour list (cycling).

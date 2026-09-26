@@ -221,42 +221,47 @@ public class ProjectileTrailTask extends BukkitRunnable {
 
     private void spawnProjectileEmitter(Location loc, Vector velocity, Emitter emitter, int pt, Player shooter) {
         Color color = resolveColor(emitter, pt);
+        Object data = ParticleTask.resolveParticleData(emitter, color);
 
-        if (emitter.getParticle() == Particle.DUST && color != null) {
-            Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            spawnParticle(shooter, loc, Particle.DUST,
-                    emitter.getAmount(),
-                    emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed(), dust);
-        } else if (emitter.isRandomDirection()) {
+        if (emitter.isRandomDirection()) {
             for (int i = 0; i < emitter.getAmount(); i++) {
                 Vector dir = randomUnitVector().multiply(emitter.getRandomDirectionSpeed());
                 spawnParticle(shooter, loc, emitter.getParticle(),
-                        0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), null);
+                        0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), data);
             }
         } else {
             spawnParticle(shooter, loc, emitter.getParticle(),
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed(), null);
+                    emitter.getSpeed(), data);
         }
     }
 
     private void spawnParticle(Player shooter, Location loc, Particle particle,
                                int count, double ox, double oy, double oz,
                                double speed, Object data) {
-        ParticleBuilder builder = new ParticleBuilder(particle)
-                .location(loc)
-                .count(count)
-                .offset(ox, oy, oz)
-                .extra(speed);
-        if (plugin.isRespectVanish() && shooter != null) {
-            builder.source(shooter);
+        try {
+            ParticleBuilder builder = new ParticleBuilder(particle)
+                    .location(loc)
+                    .count(count)
+                    .offset(ox, oy, oz)
+                    .extra(speed);
+            if (plugin.isRespectVanish() && shooter != null) {
+                builder.source(shooter);
+            }
+            if (data != null) {
+                builder.data(data);
+            } else if (particle.getDataType() == Float.class) {
+                builder.data(1.0f);
+            } else if (particle.getDataType() == Color.class) {
+                builder.data(Color.WHITE);
+            } else if (particle.getDataType() == Integer.class) {
+                builder.data(0);
+            }
+            builder.spawn();
+        } catch (Exception ignored) {
+            // Guard against unexpected particle spawning issues
         }
-        if (data != null) {
-            builder.data(data);
-        }
-        builder.spawn();
     }
 
     private Color resolveColor(Emitter emitter, int tick) {

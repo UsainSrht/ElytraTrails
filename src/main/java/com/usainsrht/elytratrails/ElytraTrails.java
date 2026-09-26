@@ -85,7 +85,7 @@ public final class ElytraTrails extends JavaPlugin {
 
         // ── Listeners ────────────────────────────────────────
         getServer().getPluginManager().registerEvents(new GUIListener(cosmeticsGUI, trailGUI), this);
-        getServer().getPluginManager().registerEvents(new PlayerListener(playerDataManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(
                 new ProjectileListener(playerDataManager, trailManager, projectileTrailTask), this);
 
@@ -224,6 +224,10 @@ public final class ElytraTrails extends JavaPlugin {
 
     public ProjectileTrailTask getProjectileTrailTask() {
         return projectileTrailTask;
+    }
+
+    public ParticleTask getParticleTask() {
+        return particleTask;
     }
 
     public SkinsRestorerHook getSkinsRestorerHook() {
