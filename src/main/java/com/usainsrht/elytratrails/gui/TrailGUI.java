@@ -374,7 +374,7 @@ public class TrailGUI {
         if (loreTemplate.isEmpty()) {
             loreTemplate = Arrays.asList(
                 "<gray>Type: %type%",
-                "%mode_line%",
+                "<gray>Mode: %mode%",
                 "",
                 "%status%"
             );
@@ -390,16 +390,19 @@ public class TrailGUI {
             };
         }
 
-        String modeDisplay = cm.getGuiConfig().getString("trail-item.modes." + trail.getPlayerTrailMode().name());
-        if (modeDisplay == null) {
-            modeDisplay = cm.getGuiConfig().getString("trail-item.player-modes." + trail.getPlayerTrailMode().name());
-        }
-        if (modeDisplay == null) {
-            modeDisplay = switch (trail.getPlayerTrailMode()) {
-                case NORMAL -> "<white>Normal";
-                case STANDBY -> "<white>Standby";
-                case MOVING -> "<white>Moving";
-            };
+        String modeDisplay = "";
+        if (trail.getPlayerTrailMode() != null) {
+            modeDisplay = cm.getGuiConfig().getString("trail-item.modes." + trail.getPlayerTrailMode().name());
+            if (modeDisplay == null) {
+                modeDisplay = cm.getGuiConfig().getString("trail-item.player-modes." + trail.getPlayerTrailMode().name());
+            }
+            if (modeDisplay == null) {
+                modeDisplay = switch (trail.getPlayerTrailMode()) {
+                    case NORMAL -> "<white>Normal";
+                    case STANDBY -> "<white>Standby";
+                    case MOVING -> "<white>Moving";
+                };
+            }
         }
 
         List<Component> finalLore = new ArrayList<>();
@@ -412,11 +415,14 @@ public class TrailGUI {
         }
 
         for (String templateLine : loreTemplate) {
-            if (templateLine.contains("%mode_line%")) {
+            if (templateLine.contains("%mode%") || templateLine.contains("%mode_line%")) {
                 if (trail.getCategory() == TrailCategory.PLAYER) {
-                    String modeLine = cm.getGuiConfig().getString("trail-item.mode-line-format", "<gray>Mode: %mode%")
-                            .replace("%mode%", modeDisplay);
-                    finalLore.add(MiniMessage.miniMessage().deserialize(modeLine));
+                    finalLore.add(MiniMessage.miniMessage().deserialize(templateLine
+                            .replace("%mode_line%", "<gray>Mode: " + modeDisplay)
+                            .replace("%type%", typeDisplay)
+                            .replace("%mode%", modeDisplay)
+                            .replace("%permission%", trail.getPermission())
+                    ));
                 }
             } else if (templateLine.contains("%status%")) {
                 finalLore.addAll(componentStatus);

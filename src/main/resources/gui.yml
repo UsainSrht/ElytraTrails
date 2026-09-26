@@ -174,10 +174,9 @@ trail-item:
     MOVING: "<white>Moving"
   lore:
     - "<gray>Type: %type%"
-    - "%mode_line%"
+    - "<gray>Mode: %mode%"
     - ""
     - "%status%"
-  mode-line-format: "<gray>Mode: %mode%"
   status-lines:
     active:
       - "<green>▶ Currently Active"
