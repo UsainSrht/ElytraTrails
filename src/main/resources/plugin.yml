@@ -20,6 +20,12 @@ permissions:
   elytratrails.use.swim:
     description: Allows swimming trail particles to render.
     default: true
+  elytratrails.use.skin:
+    description: Allows changing skins via the cosmetics GUI.
+    default: true
+  elytratrails.use.hat:
+    description: Allows equipping custom hats via the cosmetics GUI.
+    default: true
   elytratrails.trail.*:
     description: Grants access to all trails.
     default: false

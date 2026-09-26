@@ -16,6 +16,7 @@ import com.usainsrht.elytratrails.trail.ParticleTask;
 import com.usainsrht.elytratrails.trail.ProjectileTrailTask;
 import com.usainsrht.elytratrails.skins.SkinsRestorerHook;
 import com.usainsrht.elytratrails.skin.SkinChangePricing;
+import com.usainsrht.elytratrails.hat.CustomHatPricing;
 import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,6 +36,7 @@ public final class ElytraTrails extends JavaPlugin {
     private WorldGuardHook worldGuardHook;
     private SkinsRestorerHook skinsRestorerHook;
     private SkinChangePricing skinChangePricing;
+    private CustomHatPricing customHatPricing;
     private CosmeticsGUI cosmeticsGUI;
     private TrailGUI trailGUI;
     private ParticleTask particleTask;
@@ -60,9 +62,10 @@ public final class ElytraTrails extends JavaPlugin {
         // ── WorldGuard ───────────────────────────────────────
         worldGuardHook = new WorldGuardHook(getLogger());
 
-        // ── SkinsRestorer ────────────────────────────────────
+        // ── SkinsRestorer & Hat ─────────────────────────────
         skinsRestorerHook = new SkinsRestorerHook(this);
         skinChangePricing = new SkinChangePricing(this);
+        customHatPricing = new CustomHatPricing(this);
 
         // ── GUI (build CosmeticsGUI after TrailGUI; resolve circular ref) ──
         // TrailGUI needs CosmeticsGUI for the Back button, so we construct
@@ -229,6 +232,10 @@ public final class ElytraTrails extends JavaPlugin {
 
     public SkinChangePricing getSkinChangePricing() {
         return skinChangePricing;
+    }
+
+    public CustomHatPricing getCustomHatPricing() {
+        return customHatPricing;
     }
 
     public boolean isRespectVanish() {

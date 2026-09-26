@@ -66,6 +66,24 @@ skin-change:
     # Shown in the discounted price lore line (e.g. "20% discount from VIP").
     source: "VIP"
 
+# ── Custom Hat Settings ──────────────────────────────────────────────
+#
+# Cost to equip a custom hat using the GUI button.
+# Set to 0 to make it free.
+custom-hat:
+  cost: 50.0
+  discount:
+    # Enable VIP discount lookups via LimitAPI (falls back to LuckPerms meta).
+    enabled: true
+    # LuckPerms meta key — also passed to LimitAPI when installed.
+    key: "hat-discount"
+    # LimitAPI strategy: META, PERMISSION_HIGHEST, or PERMISSION_SUMMED
+    strategy: "META"
+    # Discount percent when no meta/permission value is found (0 = no discount).
+    default-percent: 0
+    # Shown in the discounted price lore line (e.g. "20% discount from VIP").
+    source: "VIP"
+
 # ── Command Settings ────────────────────────────────────────────────
 #
 # Customize the main command name, aliases, and subcommand names/aliases.

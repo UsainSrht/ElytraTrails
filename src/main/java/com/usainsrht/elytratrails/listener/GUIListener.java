@@ -29,15 +29,24 @@ public class GUIListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        // Only handle clicks in the top inventory
-        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+        boolean isCosmetics = event.getView().getTopInventory().getHolder() instanceof CosmeticsGUIHolder;
+        boolean isTrail = event.getView().getTopInventory().getHolder() instanceof TrailGUIHolder;
 
-        if (event.getInventory().getHolder() instanceof CosmeticsGUIHolder) {
+        if (!isCosmetics && !isTrail) return;
+
+        if (event.getClickedInventory() == event.getView().getTopInventory()) {
             event.setCancelled(true);
-            cosmeticsGUI.handleClick(player, event.getSlot());
-        } else if (event.getInventory().getHolder() instanceof TrailGUIHolder holder) {
-            event.setCancelled(true);
-            trailGUI.handleClick(player, event.getSlot(), holder);
+            if (isCosmetics) {
+                cosmeticsGUI.handleClick(player, event.getSlot(), event);
+            } else {
+                TrailGUIHolder holder = (TrailGUIHolder) event.getView().getTopInventory().getHolder();
+                trailGUI.handleClick(player, event.getSlot(), holder);
+            }
+        } else {
+            // Prevent shift-clicking items from player inventory into the GUI
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+            }
         }
     }
 

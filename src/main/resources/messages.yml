@@ -46,3 +46,12 @@ messages:
   skin-changed-free: "<green>Skin changed successfully!"
   skin-change-failed: "<red>Failed to change skin: %error%"
   skin-change-cancelled: "<gray>Skin change cancelled."
+
+  # Custom hat messages
+  custom-hat-no-item: "<red>You must hold an item on your cursor to wear it as a hat!"
+  custom-hat-cost: "<red>You need %price% to equip a custom hat."
+  custom-hat-not-enough-money: "<red>You do not have enough money to equip a custom hat."
+  custom-hat-curse-of-binding: "<red>You cannot replace your helmet because it has Curse of Binding!"
+  custom-hat-equipped-charged: "<green>Custom hat equipped! Charged %price%."
+  custom-hat-equipped-free: "<green>Custom hat equipped!"
+  custom-hat-economy-not-available: "<red>Economy is not available. Cannot equip custom hat."

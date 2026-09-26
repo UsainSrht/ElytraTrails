@@ -15,9 +15,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import com.usainsrht.elytratrails.hat.CustomHatPricing;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +31,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -150,6 +155,12 @@ public class CosmeticsGUI {
                     ), null, null));
         }
 
+        // ── Custom Hat ────────────────────────────────────
+        int hatSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.custom-hat.slot", 20);
+        if (hatSlot >= 0 && hatSlot < size) {
+            inv.setItem(hatSlot, makeCustomHatItem(cm, player));
+        }
+
         // ── Skin Change ───────────────────────────────────
         int skinSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.skin-change.slot", 22);
         if (skinSlot >= 0 && skinSlot < size) {
@@ -162,12 +173,17 @@ public class CosmeticsGUI {
     // ── Click handling ──────────────────────────────────────
 
     public void handleClick(Player player, int slot) {
+        handleClick(player, slot, null);
+    }
+
+    public void handleClick(Player player, int slot, InventoryClickEvent event) {
         ConfigManager cm = plugin.getConfigManager();
         int elytraSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.elytra-trails.slot", 16);
         int playerSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.player-trails.slot", 12);
         int swimSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.swim-trails.slot", 13);
         int arrowSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.arrow-trails.slot", 14);
         int skinSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.skin-change.slot", 22);
+        int hatSlot = cm.getGuiConfig().getInt("cosmetics-gui.items.custom-hat.slot", 20);
 
         if (slot == elytraSlot) {
             trailGUI.open(player, 0, TrailCategory.ELYTRA);
@@ -179,6 +195,84 @@ public class CosmeticsGUI {
             trailGUI.open(player, 0, TrailCategory.ARROW);
         } else if (slot == skinSlot) {
             handleSkinChangeClick(player);
+        } else if (slot == hatSlot) {
+            handleCustomHatClick(player, event);
+        }
+    }
+
+    private void handleCustomHatClick(Player player, InventoryClickEvent event) {
+        ConfigManager cm = plugin.getConfigManager();
+        if (!player.hasPermission("elytratrails.use.hat")) {
+            player.sendMessage(cm.getMessage("no-permission"));
+            return;
+        }
+
+        ItemStack cursor = event != null ? event.getCursor() : player.getItemOnCursor();
+        if (cursor == null || cursor.getType().isAir() || cursor.getAmount() <= 0) {
+            player.sendMessage(cm.getMessage("custom-hat-no-item"));
+            return;
+        }
+
+        // Check if player's current helmet has Curse of Binding
+        ItemStack currentHelmet = player.getInventory().getHelmet();
+        if (currentHelmet != null && !currentHelmet.getType().isAir()) {
+            if (currentHelmet.getEnchantments().containsKey(Enchantment.BINDING_CURSE)
+                    && player.getGameMode() != GameMode.CREATIVE) {
+                player.sendMessage(cm.getMessage("custom-hat-curse-of-binding"));
+                return;
+            }
+        }
+
+        double cost = plugin.getCustomHatPricing().getEffectiveCost(player);
+        if (cost > 0) {
+            if (!plugin.getVaultHook().isEnabled()) {
+                player.sendMessage(cm.getMessage("custom-hat-economy-not-available"));
+                return;
+            }
+            if (!plugin.getVaultHook().has(player, cost)) {
+                player.sendMessage(cm.getMessage("custom-hat-cost", "%price%", plugin.getVaultHook().format(cost)));
+                return;
+            }
+        }
+
+        // Deduct cost if applicable
+        if (cost > 0) {
+            if (!plugin.getVaultHook().withdraw(player, cost)) {
+                player.sendMessage(cm.getMessage("transaction-failed"));
+                return;
+            }
+        }
+
+        // Safe transfer:
+        // 1. Clone the item on the cursor
+        ItemStack hatItem = cursor.clone();
+
+        // 2. Clear the cursor completely to prevent close-inventory duplication glitches
+        if (event != null) {
+            event.getView().setCursor(null);
+        }
+        player.setItemOnCursor(null);
+
+        // 3. If the player was wearing an existing helmet, return it to their inventory
+        if (currentHelmet != null && !currentHelmet.getType().isAir()) {
+            HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(currentHelmet);
+            for (ItemStack drop : leftovers.values()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), drop);
+            }
+        }
+
+        // 4. Place item on player's head
+        player.getInventory().setHelmet(hatItem);
+        player.updateInventory();
+
+        // 5. Close GUI
+        player.closeInventory();
+
+        // 6. Notify player
+        if (cost > 0) {
+            player.sendMessage(cm.getMessage("custom-hat-equipped-charged", "%price%", plugin.getVaultHook().format(cost)));
+        } else {
+            player.sendMessage(cm.getMessage("custom-hat-equipped-free"));
         }
     }
 
@@ -309,6 +403,71 @@ public class CosmeticsGUI {
 
         SkinChangePricing pricing = plugin.getSkinChangePricing();
         SkinChangePricing.PriceDisplay prices = pricing.formatPrices(player, plugin.getVaultHook());
+
+        String priceLine;
+        String discountLine = "";
+        if (prices.hasDiscount()) {
+            String priceTemplate = cm.getGuiConfig().getString(
+                    path + ".discounted-price-lore",
+                    "<strikethrough><gray>%old_price%</strikethrough> <green>%new_price%");
+            String discountTemplate = cm.getGuiConfig().getString(
+                    path + ".discount-info-lore",
+                    "<gray>%percent%% discount from %source%");
+            priceLine = priceTemplate
+                    .replace("%old_price%", prices.formattedBase())
+                    .replace("%new_price%", prices.formattedEffective());
+            discountLine = discountTemplate
+                    .replace("%percent%", String.valueOf(prices.discountPercent()))
+                    .replace("%source%", pricing.getDiscountSource());
+        } else {
+            String priceTemplate = cm.getGuiConfig().getString(path + ".price-lore", "<yellow>Cost: <white>%price%");
+            String formattedPrice = prices.formattedEffective();
+            priceLine = priceTemplate.replace("%price%", formattedPrice);
+        }
+
+        Component displayName = MiniMessage.miniMessage().deserialize(nameRaw);
+        List<Component> lore = new ArrayList<>();
+        for (String line : rawLore) {
+            if ("%discount_line%".equals(line.trim())) {
+                if (discountLine.isEmpty()) {
+                    continue;
+                }
+                line = discountLine;
+            } else {
+                if (line.contains("%price_line%")) {
+                    line = line.replace("%price_line%", priceLine);
+                }
+                if (line.contains("%discount_line%")) {
+                    if (discountLine.isEmpty()) {
+                        continue;
+                    }
+                    line = line.replace("%discount_line%", discountLine);
+                }
+            }
+            lore.add(MiniMessage.miniMessage().deserialize(line));
+        }
+
+        return makeItem(mat, displayName, lore);
+    }
+
+    private ItemStack makeCustomHatItem(ConfigManager cm, Player player) {
+        String path = "cosmetics-gui.items.custom-hat";
+        Material mat = getMaterial(cm.getGuiConfig().getString(path + ".material"), Material.CARVED_PUMPKIN);
+        String nameRaw = cm.getGuiConfig().getString(path + ".display-name", "<yellow><bold>✦ Custom Hat</bold>");
+        List<String> rawLore = cm.getGuiConfig().contains(path + ".lore")
+                ? cm.getGuiConfig().getStringList(path + ".lore")
+                : Arrays.asList(
+                        "<gray>Wear any item as a hat!",
+                        "<gray>Pick up an item on your cursor,",
+                        "<gray>then click this button to equip.",
+                        "",
+                        "%price_line%",
+                        "%discount_line%",
+                        "",
+                        "<yellow>» <gold>Click with item to equip!");
+
+        CustomHatPricing pricing = plugin.getCustomHatPricing();
+        CustomHatPricing.PriceDisplay prices = pricing.formatPrices(player, plugin.getVaultHook());
 
         String priceLine;
         String discountLine = "";
