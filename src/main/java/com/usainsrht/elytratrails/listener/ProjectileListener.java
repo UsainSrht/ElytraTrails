@@ -1,10 +1,12 @@
 package com.usainsrht.elytratrails.listener;
 
+import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.config.PlayerDataManager;
 import com.usainsrht.elytratrails.config.TrailManager;
 import com.usainsrht.elytratrails.model.Trail;
 import com.usainsrht.elytratrails.model.TrailCategory;
 import com.usainsrht.elytratrails.trail.ProjectileTrailTask;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -23,16 +25,26 @@ import java.util.UUID;
  */
 public class ProjectileListener implements Listener {
 
+    private final ElytraTrails plugin;
     private final PlayerDataManager playerData;
     private final TrailManager trailManager;
     private final ProjectileTrailTask projectileTask;
 
-    public ProjectileListener(PlayerDataManager playerData,
+    public ProjectileListener(ElytraTrails plugin,
+                              PlayerDataManager playerData,
                               TrailManager trailManager,
                               ProjectileTrailTask projectileTask) {
+        this.plugin = plugin;
         this.playerData = playerData;
         this.trailManager = trailManager;
         this.projectileTask = projectileTask;
+    }
+
+    public ProjectileListener(PlayerDataManager playerData,
+                              TrailManager trailManager,
+                              ProjectileTrailTask projectileTask) {
+        this(projectileTask != null ? projectileTask.getPlugin() : ElytraTrails.getInstance(),
+                playerData, trailManager, projectileTask);
     }
 
     @EventHandler
@@ -41,6 +53,10 @@ public class ProjectileListener implements Listener {
 
         // Only care about player-fired projectiles
         if (!(projectile.getShooter() instanceof Player player)) return;
+
+        if (plugin != null && plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
 
         UUID uuid = player.getUniqueId();
         String trailId = playerData.getActiveTrail(uuid, TrailCategory.ARROW);

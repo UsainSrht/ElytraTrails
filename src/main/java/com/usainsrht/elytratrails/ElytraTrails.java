@@ -87,7 +87,7 @@ public final class ElytraTrails extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GUIListener(cosmeticsGUI, trailGUI), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(
-                new ProjectileListener(playerDataManager, trailManager, projectileTrailTask), this);
+                new ProjectileListener(this, playerDataManager, trailManager, projectileTrailTask), this);
 
         // ── Commands ─────────────────────────────────────────
         registerCommands();
@@ -244,6 +244,16 @@ public final class ElytraTrails extends JavaPlugin {
 
     public boolean isRespectVanish() {
         return getConfig().getBoolean("respect-vanish", true);
+    }
+
+    public boolean isDisableInSpectator() {
+        if (getConfig().contains("disable-in-spectator")) {
+            return getConfig().getBoolean("disable-in-spectator", true);
+        }
+        if (getConfig().contains("spectator-trails")) {
+            return !getConfig().getBoolean("spectator-trails", false);
+        }
+        return true;
     }
 
     public int getArrowTrailsDelay() {

@@ -7,6 +7,7 @@ import com.usainsrht.elytratrails.config.TrailManager;
 import com.usainsrht.elytratrails.config.WorldGuardHook;
 import com.usainsrht.elytratrails.model.*;
 import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -88,6 +89,11 @@ public class ParticleTask extends BukkitRunnable {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
 
+            if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) {
+                cleanup(uuid);
+                continue;
+            }
+
             // ── Elytra trails ───────────────────────────────
             if (isGlidingWithElytra(player)) {
                 tickElytraTrail(player, uuid);
@@ -119,6 +125,10 @@ public class ParticleTask extends BukkitRunnable {
     /* ================================================================== */
 
     private void tickElytraTrail(Player player, UUID uuid) {
+        if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+
         String trailId = playerData.getActiveTrail(uuid, TrailCategory.ELYTRA);
         if (trailId == null) return;
 
@@ -183,6 +193,10 @@ public class ParticleTask extends BukkitRunnable {
     /* ================================================================== */
 
     private void tickSwimTrail(Player player, UUID uuid) {
+        if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+
         String trailId = playerData.getActiveTrail(uuid, TrailCategory.SWIM);
         if (trailId == null) return;
 
@@ -239,6 +253,12 @@ public class ParticleTask extends BukkitRunnable {
     /* ================================================================== */
 
     private void tickPlayerTrail(Player player, UUID uuid) {
+        if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) {
+            playerTrailTicks.remove(uuid);
+            playerPrevLocations.remove(uuid);
+            return;
+        }
+
         String trailId = playerData.getActiveTrail(uuid, TrailCategory.PLAYER);
         if (trailId == null) {
             playerTrailTicks.remove(uuid);
@@ -667,10 +687,12 @@ public class ParticleTask extends BukkitRunnable {
     }
 
     private boolean isSwimming(Player player) {
+        if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) return false;
         return player.isSwimming() && player.isInWater();
     }
 
     private boolean isGlidingWithElytra(Player player) {
+        if (plugin.isDisableInSpectator() && player.getGameMode() == GameMode.SPECTATOR) return false;
         if (!player.isGliding()) return false;
         ItemStack chestplate = player.getInventory().getChestplate();
         return chestplate != null && chestplate.getType() == Material.ELYTRA;

@@ -2,8 +2,10 @@ package com.usainsrht.elytratrails.listener;
 
 import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.config.PlayerDataManager;
+import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -33,6 +35,15 @@ public class PlayerListener implements Listener {
         playerData.unload(uuid);
         if (plugin.getParticleTask() != null) {
             plugin.getParticleTask().cleanup(uuid);
+        }
+    }
+
+    @EventHandler
+    public void onGameModeChange(PlayerGameModeChangeEvent event) {
+        if (plugin.isDisableInSpectator() && event.getNewGameMode() == GameMode.SPECTATOR) {
+            if (plugin.getParticleTask() != null) {
+                plugin.getParticleTask().cleanup(event.getPlayer().getUniqueId());
+            }
         }
     }
 }

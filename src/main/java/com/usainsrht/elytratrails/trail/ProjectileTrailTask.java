@@ -5,6 +5,7 @@ import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.model.Emitter;
 import com.usainsrht.elytratrails.model.Trail;
 import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -49,6 +50,10 @@ public class ProjectileTrailTask extends BukkitRunnable {
     public ProjectileTrailTask(ElytraTrails plugin) {
         this.plugin = plugin;
         loadConfig();
+    }
+
+    public ElytraTrails getPlugin() {
+        return plugin;
     }
 
     /**
@@ -205,6 +210,10 @@ public class ProjectileTrailTask extends BukkitRunnable {
             Player shooter = shooterUuid != null ? plugin.getServer().getPlayer(shooterUuid) : null;
             if (shooter == null && entity instanceof Projectile proj && proj.getShooter() instanceof Player p) {
                 shooter = p;
+            }
+
+            if (plugin.isDisableInSpectator() && shooter != null && shooter.getGameMode() == GameMode.SPECTATOR) {
+                continue;
             }
 
             Location loc = entity.getLocation();

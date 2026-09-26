@@ -41,6 +41,12 @@ arrow-trails:
   delay: 5
   max-lifetime: 1200
 
+# ── Spectator Mode ───────────────────────────────────────────────────
+#
+# When enabled, trails will not work/display for players in spectator mode.
+# This prevents spectators from leaving particle trails while flying/spectating.
+disable-in-spectator: true
+
 # ── Vanish Compatibility ──────────────────────────────────────────────
 #
 # When enabled, trails will respect Paper's Vanish API.
