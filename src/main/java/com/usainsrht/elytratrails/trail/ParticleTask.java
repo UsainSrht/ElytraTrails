@@ -1,5 +1,6 @@
 package com.usainsrht.elytratrails.trail;
 
+import com.destroystokyo.paper.ParticleBuilder;
 import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.config.PlayerDataManager;
 import com.usainsrht.elytratrails.config.TrailManager;
@@ -393,7 +394,7 @@ public class ParticleTask extends BukkitRunnable {
 
         if (emitter.getParticle() == Particle.DUST && color != null) {
             Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            player.getWorld().spawnParticle(Particle.DUST, spawnLoc,
+            spawnParticle(player, spawnLoc, Particle.DUST,
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
                     emitter.getSpeed(), dust);
@@ -402,18 +403,18 @@ public class ParticleTask extends BukkitRunnable {
                 // Spawn one at a time with random velocity
                 for (int i = 0; i < emitter.getAmount(); i++) {
                     Vector dir = randomUnitVector().multiply(emitter.getRandomDirectionSpeed());
-                    player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
-                            0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed());
+                    spawnParticle(player, spawnLoc, emitter.getParticle(),
+                            0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), null);
                 }
             } else if (!emitter.getVelocity().isZero()) {
                 Vector v = emitter.getVelocity();
-                player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
-                        0, v.getX(), v.getY(), v.getZ(), 1);
+                spawnParticle(player, spawnLoc, emitter.getParticle(),
+                        0, v.getX(), v.getY(), v.getZ(), 1, null);
             } else {
-                player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
+                spawnParticle(player, spawnLoc, emitter.getParticle(),
                         emitter.getAmount(),
                         emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                        emitter.getSpeed());
+                        emitter.getSpeed(), null);
             }
         }
     }
@@ -443,11 +444,11 @@ public class ParticleTask extends BukkitRunnable {
             Color color = resolveColor(emitter, pt + i);
             if (emitter.getParticle() == Particle.DUST && color != null) {
                 Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-                player.getWorld().spawnParticle(Particle.DUST, spawnLoc,
+                spawnParticle(player, spawnLoc, Particle.DUST,
                         emitter.getAmount(), 0, 0, 0, 0, dust);
             } else {
-                player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
-                        emitter.getAmount(), 0, 0, 0, emitter.getSpeed());
+                spawnParticle(player, spawnLoc, emitter.getParticle(),
+                        emitter.getAmount(), 0, 0, 0, emitter.getSpeed(), null);
             }
         }
     }
@@ -490,11 +491,11 @@ public class ParticleTask extends BukkitRunnable {
         Color color = resolveColor(emitter, colorIdx);
         if (emitter.getParticle() == Particle.DUST && color != null) {
             Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            player.getWorld().spawnParticle(Particle.DUST, spawnLoc,
+            spawnParticle(player, spawnLoc, Particle.DUST,
                     1, 0, 0, 0, 0, dust);
         } else {
-            player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
-                    1, 0, 0, 0, emitter.getSpeed());
+            spawnParticle(player, spawnLoc, emitter.getParticle(),
+                    1, 0, 0, 0, emitter.getSpeed(), null);
         }
     }
 
@@ -510,16 +511,37 @@ public class ParticleTask extends BukkitRunnable {
         Color color = resolveColor(emitter, pt);
         if (emitter.getParticle() == Particle.DUST && color != null) {
             Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            player.getWorld().spawnParticle(Particle.DUST, spawnLoc,
+            spawnParticle(player, spawnLoc, Particle.DUST,
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
                     emitter.getSpeed(), dust);
         } else {
-            player.getWorld().spawnParticle(emitter.getParticle(), spawnLoc,
+            spawnParticle(player, spawnLoc, emitter.getParticle(),
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed());
+                    emitter.getSpeed(), null);
         }
+    }
+
+    /**
+     * Spawns a particle using Paper's ParticleBuilder, attaching the source player
+     * so that Paper's Vanish API hides the particle from any player who cannot see the source.
+     */
+    private void spawnParticle(Player player, Location loc, Particle particle,
+                               int count, double ox, double oy, double oz,
+                               double speed, Object data) {
+        ParticleBuilder builder = new ParticleBuilder(particle)
+                .location(loc)
+                .count(count)
+                .offset(ox, oy, oz)
+                .extra(speed);
+        if (plugin.isRespectVanish() && player != null) {
+            builder.source(player);
+        }
+        if (data != null) {
+            builder.data(data);
+        }
+        builder.spawn();
     }
 
     /* ================================================================== */

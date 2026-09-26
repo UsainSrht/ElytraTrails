@@ -1,11 +1,13 @@
 package com.usainsrht.elytratrails.trail;
 
+import com.destroystokyo.paper.ParticleBuilder;
 import com.usainsrht.elytratrails.ElytraTrails;
 import com.usainsrht.elytratrails.model.Emitter;
 import com.usainsrht.elytratrails.model.Trail;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -25,6 +27,8 @@ public class ProjectileTrailTask extends BukkitRunnable {
     private final Map<UUID, Trail> activeProjectiles = new ConcurrentHashMap<>();
     /** Per-projectile tick counter for interval tracking */
     private final Map<UUID, Integer> projectileTicks  = new ConcurrentHashMap<>();
+    /** Maps projectile UUID → shooter player UUID */
+    private final Map<UUID, UUID> projectileShooters = new ConcurrentHashMap<>();
 
     private final ElytraTrails plugin;
 
@@ -34,14 +38,24 @@ public class ProjectileTrailTask extends BukkitRunnable {
 
     // ── Registration ────────────────────────────────────────
 
+    public void register(Projectile projectile, Trail trail, UUID shooterUuid) {
+        UUID uid = projectile.getUniqueId();
+        activeProjectiles.put(uid, trail);
+        projectileTicks.put(uid, 0);
+        if (shooterUuid != null) {
+            projectileShooters.put(uid, shooterUuid);
+        }
+    }
+
     public void register(Projectile projectile, Trail trail) {
-        activeProjectiles.put(projectile.getUniqueId(), trail);
-        projectileTicks.put(projectile.getUniqueId(), 0);
+        UUID shooterUuid = projectile.getShooter() instanceof Player p ? p.getUniqueId() : null;
+        register(projectile, trail, shooterUuid);
     }
 
     public void unregister(UUID projectileUUID) {
         activeProjectiles.remove(projectileUUID);
         projectileTicks.remove(projectileUUID);
+        projectileShooters.remove(projectileUUID);
     }
 
     public boolean isTracked(UUID projectileUUID) {
@@ -72,7 +86,14 @@ public class ProjectileTrailTask extends BukkitRunnable {
             if (entity == null || entity.isDead() || !entity.isValid()) {
                 it.remove();
                 projectileTicks.remove(uid);
+                projectileShooters.remove(uid);
                 continue;
+            }
+
+            UUID shooterUuid = projectileShooters.get(uid);
+            Player shooter = shooterUuid != null ? plugin.getServer().getPlayer(shooterUuid) : null;
+            if (shooter == null && entity instanceof Projectile proj && proj.getShooter() instanceof Player p) {
+                shooter = p;
             }
 
             int pt = projectileTicks.merge(uid, 1, Integer::sum);
@@ -81,34 +102,51 @@ public class ProjectileTrailTask extends BukkitRunnable {
 
             for (Emitter emitter : trail.getEmitters()) {
                 if (pt % emitter.getInterval() != 0) continue;
-                spawnProjectileEmitter(loc, velocity, emitter, pt);
+                spawnProjectileEmitter(loc, velocity, emitter, pt, shooter);
             }
         }
     }
 
     // ── Particle spawning ───────────────────────────────────
 
-    private void spawnProjectileEmitter(Location loc, Vector velocity, Emitter emitter, int pt) {
+    private void spawnProjectileEmitter(Location loc, Vector velocity, Emitter emitter, int pt, Player shooter) {
         Color color = resolveColor(emitter, pt);
 
         if (emitter.getParticle() == Particle.DUST && color != null) {
             Particle.DustOptions dust = new Particle.DustOptions(color, emitter.getSize());
-            loc.getWorld().spawnParticle(Particle.DUST, loc,
+            spawnParticle(shooter, loc, Particle.DUST,
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
                     emitter.getSpeed(), dust);
         } else if (emitter.isRandomDirection()) {
             for (int i = 0; i < emitter.getAmount(); i++) {
                 Vector dir = randomUnitVector().multiply(emitter.getRandomDirectionSpeed());
-                loc.getWorld().spawnParticle(emitter.getParticle(), loc,
-                        0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed());
+                spawnParticle(shooter, loc, emitter.getParticle(),
+                        0, dir.getX(), dir.getY(), dir.getZ(), emitter.getRandomDirectionSpeed(), null);
             }
         } else {
-            loc.getWorld().spawnParticle(emitter.getParticle(), loc,
+            spawnParticle(shooter, loc, emitter.getParticle(),
                     emitter.getAmount(),
                     emitter.getOffset().getX(), emitter.getOffset().getY(), emitter.getOffset().getZ(),
-                    emitter.getSpeed());
+                    emitter.getSpeed(), null);
         }
+    }
+
+    private void spawnParticle(Player shooter, Location loc, Particle particle,
+                               int count, double ox, double oy, double oz,
+                               double speed, Object data) {
+        ParticleBuilder builder = new ParticleBuilder(particle)
+                .location(loc)
+                .count(count)
+                .offset(ox, oy, oz)
+                .extra(speed);
+        if (plugin.isRespectVanish() && shooter != null) {
+            builder.source(shooter);
+        }
+        if (data != null) {
+            builder.data(data);
+        }
+        builder.spawn();
     }
 
     private Color resolveColor(Emitter emitter, int tick) {

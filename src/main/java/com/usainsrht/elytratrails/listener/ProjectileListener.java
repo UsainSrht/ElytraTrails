@@ -58,7 +58,7 @@ public class ProjectileListener implements Listener {
             return;
         }
 
-        projectileTask.register(projectile, trail);
+        projectileTask.register(projectile, trail, player.getUniqueId());
     }
 
     @EventHandler

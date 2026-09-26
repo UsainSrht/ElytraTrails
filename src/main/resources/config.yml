@@ -26,6 +26,13 @@ player-trails:
   #   - lobby
   #   - arena_1
 
+# ── Vanish Compatibility ──────────────────────────────────────────────
+#
+# When enabled, trails will respect Paper's Vanish API.
+# Hidden/vanished players' trails will NOT be seen by players who cannot see them.
+# The vanished players and server staff who can see them will still see the trails.
+respect-vanish: true
+
 # ── Skin Change Settings ─────────────────────────────────────────────
 #
 # Cost to change skin using the GUI button.

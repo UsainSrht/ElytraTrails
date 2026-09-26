@@ -230,4 +230,8 @@ public final class ElytraTrails extends JavaPlugin {
     public SkinChangePricing getSkinChangePricing() {
         return skinChangePricing;
     }
+
+    public boolean isRespectVanish() {
+        return getConfig().getBoolean("respect-vanish", true);
+    }
 }
